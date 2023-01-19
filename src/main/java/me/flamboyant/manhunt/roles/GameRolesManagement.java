@@ -1,7 +1,8 @@
-package me.flamboyant.manhunt.roles;
+package me.flamboyant.gamemodes.newmanhunt.roles;
 
-import me.flamboyant.configurable.parameters.EnumParameter;
-import me.flamboyant.utils.Common;
+import me.flamboyant.common.parameters.EnumParameter;
+import me.flamboyant.common.utils.Common;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -42,6 +43,7 @@ public class GameRolesManagement {
         }
 
         wantedSpeedrunnerCount = wantedSpeedrunnerCount == 0 ? diceSpeedrunnerCount(playersParameter.size()) : wantedSpeedrunnerCount;
+        Bukkit.getLogger().info("Wanted speedrunners : " + wantedSpeedrunnerCount);
         wantedAllyCount = wantedAllyCount == 0 ? diceAllyCount(playersParameter.size(), wantedSpeedrunnerCount) : wantedAllyCount;
 
         if (speedrunnerCount > wantedSpeedrunnerCount || allyCount > wantedAllyCount) {
@@ -56,34 +58,51 @@ public class GameRolesManagement {
         List<Player> playersToUpdate = playersParameter.keySet().stream().filter(p -> playersParameter.get(p).getSelectedValue() == null || finalBerzerkMode).collect(Collectors.toList());
         distributeRoles(playersToUpdate, playersParameter, wantedSpeedrunnerCount, wantedAllyCount, specialOnly);
 
+        for (Player p : playersParameter.keySet()) {
+            Bukkit.getLogger().info(p.getDisplayName() + " - " + playersParameter.get(p).getSelectedValue().toString());
+        }
+
         return true;
     }
 
     private void distributeRoles(List<Player> players, HashMap<Player, EnumParameter<ManhuntRoleIdentifier>> playersParameter, int wantedSpeedrunnerCount, int wantedAllyCount, boolean specialOnly) {
+        Bukkit.getLogger().info("Distributing speedrunners : " + wantedSpeedrunnerCount);
         List<ManhuntRoleIdentifier> speedrunnerTypes = Arrays.stream(ManhuntRoleIdentifier.values()).filter(v -> v.toString().contains("SPEEDRUNNER") && v != ManhuntRoleIdentifier.SPEEDRUNNER_SIMPLE).collect(Collectors.toList());
         List<ManhuntRoleIdentifier> allyTypes = Arrays.stream(ManhuntRoleIdentifier.values()).filter(v -> v.toString().contains("ALLY")).collect(Collectors.toList());
-        List<ManhuntRoleIdentifier> specialOpponentTypes = Arrays.stream(ManhuntRoleIdentifier.values()).filter(v -> !v.toString().contains("ALLY") && !v.toString().contains("SPEEDRUNNER") && v != ManhuntRoleIdentifier.HUNTER_SIMPLE).collect(Collectors.toList());
+        List<ManhuntRoleIdentifier> hunterTypes = Arrays.stream(ManhuntRoleIdentifier.values()).filter(v -> v.toString().contains("HUNTER") && v != ManhuntRoleIdentifier.HUNTER_SIMPLE).collect(Collectors.toList());
+        List<ManhuntRoleIdentifier> soloTypes = Arrays.stream(ManhuntRoleIdentifier.values()).filter(v -> v.toString().contains("NEUTRAL")).collect(Collectors.toList());
         for (Player player : shufflePlayers(players)) {
             ManhuntRoleIdentifier roleId;
 
+            Bukkit.getLogger().info("Role dice roll for " + player.getDisplayName());
             if (wantedSpeedrunnerCount > 0) {
-                if (Common.rng.nextInt(100) < 30 && !specialOnly)
+                if ((Common.rng.nextInt(100) < 30 && !specialOnly) || speedrunnerTypes.size() == 0)
                     roleId = ManhuntRoleIdentifier.SPEEDRUNNER_SIMPLE;
-                else
+                else {
                     roleId = speedrunnerTypes.get(Common.rng.nextInt(speedrunnerTypes.size()));
+                    speedrunnerTypes.remove(roleId);
+                }
                 wantedSpeedrunnerCount--;
             }
-            else if (wantedAllyCount > 0) {
+            else if (wantedAllyCount > 0 && hunterTypes.size() > 0) {
                 roleId = allyTypes.get(Common.rng.nextInt(allyTypes.size()));
+                allyTypes.remove(roleId);
                 wantedAllyCount--;
             }
             else {
-                if (Common.rng.nextBoolean() && !specialOnly)
+                if (Common.rng.nextInt(100) < 20 && soloTypes.size() > 0) {
+                    roleId = soloTypes.get(Common.rng.nextInt(soloTypes.size()));
+                    soloTypes.remove(roleId);
+                }
+                else if ((Common.rng.nextBoolean() && !specialOnly) || hunterTypes.size() == 0)
                     roleId = ManhuntRoleIdentifier.HUNTER_SIMPLE;
-                else
-                    roleId = specialOpponentTypes.get(Common.rng.nextInt(specialOpponentTypes.size()));
+                else {
+                    roleId = hunterTypes.get(Common.rng.nextInt(hunterTypes.size()));
+                    hunterTypes.remove(roleId);
+                }
             }
 
+            Bukkit.getLogger().info("- " + roleId.toString());
             playersParameter.get(player).setSelectedValue(roleId);
         }
     }
@@ -106,15 +125,17 @@ public class GameRolesManagement {
     }
 
     private List<Player> shufflePlayers(List<Player> players) {
-        List<Player> res = new ArrayList<>(players.size());
+        List<Player> res = new ArrayList<>();
         List<Integer> availableIndex = new ArrayList<>();
 
         for (int i = 0; i < players.size(); i++) {
             availableIndex.add(i);
+            res.add(null);
         }
 
         for (Player p : players) {
             int indexIndex = Common.rng.nextInt(availableIndex.size());
+            Bukkit.getLogger().info("Selecting index " + indexIndex);
             res.set(availableIndex.get(indexIndex), p);
             availableIndex.remove(indexIndex);
         }

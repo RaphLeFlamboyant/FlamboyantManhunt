@@ -1,7 +1,7 @@
-package me.flamboyant.manhunt.roles.impl;
+package me.flamboyant.gamemodes.newmanhunt.roles.impl;
 
-import me.flamboyant.utils.ChatColorUtils;
-import me.flamboyant.manhunt.roles.ManhuntRoleType;
+import me.flamboyant.common.utils.ChatColorUtils;
+import me.flamboyant.gamemodes.newmanhunt.roles.ManhuntRoleType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EntityType;
@@ -18,8 +18,6 @@ public class ImposterRole extends HunterRole {
 
     @Override
     protected boolean doStop() {
-        Bukkit.broadcastMessage(ChatColorUtils.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (winconMet ? "gagné" : "perdu") + " !"));
-
         EntityDamageEvent.getHandlerList().unregister(this);
         return super.doStop();
     }
@@ -28,6 +26,10 @@ public class ImposterRole extends HunterRole {
     protected boolean doStart() {
         winconMet = false;
         return super.doStart();
+    }
+    @Override
+    protected void broadcastPlayerResultMessage() {
+        Bukkit.broadcastMessage(ChatColorUtils.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (winconMet ? "gagné" : "perdu") + " !"));
     }
 
     @Override

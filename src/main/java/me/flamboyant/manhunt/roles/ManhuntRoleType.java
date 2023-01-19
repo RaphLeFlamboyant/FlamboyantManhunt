@@ -1,4 +1,4 @@
-package me.flamboyant.manhunt.roles;
+package me.flamboyant.gamemodes.newmanhunt.roles;
 
 public enum ManhuntRoleType {
     SPEEDRUNNER,

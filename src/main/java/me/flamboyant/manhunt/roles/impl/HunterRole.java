@@ -1,10 +1,10 @@
-package me.flamboyant.manhunt.roles.impl;
+package me.flamboyant.gamemodes.newmanhunt.roles.impl;
 
-import me.flamboyant.utils.ChatColorUtils;
-import me.flamboyant.utils.Common;
-import me.flamboyant.manhunt.GameData;
-import me.flamboyant.manhunt.roles.AManhuntRole;
-import me.flamboyant.manhunt.roles.ManhuntRoleType;
+import me.flamboyant.common.utils.ChatColorUtils;
+import me.flamboyant.common.utils.Common;
+import me.flamboyant.gamemodes.newmanhunt.GameData;
+import me.flamboyant.gamemodes.newmanhunt.roles.AManhuntRole;
+import me.flamboyant.gamemodes.newmanhunt.roles.ManhuntRoleType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -29,23 +29,27 @@ public class HunterRole extends AManhuntRole implements Listener {
     }
 
     @Override
-    protected boolean doStop() {
-        Bukkit.broadcastMessage(ChatColorUtils.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (GameData.remainingSpeedrunner == 0 ? "gagné" : "perdu") + " !"));
-
-        PlayerInteractEvent.getHandlerList().unregister(this);
-        PlayerRespawnEvent.getHandlerList().unregister(this);
-        return true;
-    }
-
-    @Override
     protected boolean doStart() {
         speedrunnerList = GameData.playerClassList.keySet().stream().filter(r -> GameData.playerClassList.get(r).getRoleType() == ManhuntRoleType.SPEEDRUNNER).collect(Collectors.toList());
 
         ItemStack item = new ItemStack(Material.COMPASS);
-        owner.getInventory().setItem(0, item);
+        owner.getInventory().addItem(item);
 
         Common.server.getPluginManager().registerEvents(this, Common.plugin);
         return true;
+    }
+
+    @Override
+    protected boolean doStop() {
+        PlayerInteractEvent.getHandlerList().unregister(this);
+        PlayerRespawnEvent.getHandlerList().unregister(this);
+        owner.setCooldown(Material.COMPASS, 0);
+        return true;
+    }
+
+    @Override
+    protected void broadcastPlayerResultMessage() {
+        Bukkit.broadcastMessage(ChatColorUtils.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (GameData.remainingSpeedrunner == 0 ? "gagné" : "perdu") + " !"));
     }
 
     @Override
@@ -55,7 +59,8 @@ public class HunterRole extends AManhuntRole implements Listener {
 
     @Override
     protected String getDescription() {
-        return "Gagne quand le speedrunner meurt";
+        return "Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
+                "te donne sa position.";
     }
 
     @Override
@@ -73,27 +78,27 @@ public class HunterRole extends AManhuntRole implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (owner != event.getPlayer()) return;
         if (!event.hasItem() || event.getItem().getType() != Material.COMPASS) return;
+        if (owner.hasCooldown(Material.COMPASS)) return;
 
-        Player player = event.getPlayer();
-        player.setCooldown(Material.COMPASS, 30 * 20);
+        owner.setCooldown(Material.COMPASS, 30 * 20);
 
         if (++targetIndex >= speedrunnerList.size())
             targetIndex = 0;
 
         Player target = speedrunnerList.get(targetIndex);
-        logCompassUse(player);
+        logCompassUse(owner);
         Location huntedLocation = target.getLocation();
         World huntedWorld = huntedLocation.getWorld();
-        if (player.getWorld() != huntedWorld) {
-            player.sendMessage("Le speedrunner est dans la dimension " + huntedWorld.getName());
+        if (owner.getWorld() != huntedWorld) {
+            owner.sendMessage("Le speedrunner est dans la dimension " + huntedWorld.getName());
 
-            if (player.getWorld().getName().equals("world"))
+            if (owner.getWorld().getName().equals("world"))
                 huntedLocation = GameData.overworldLocationBeforePortal.get(target);
-            if (player.getWorld().getName().equals("world_nether"))
+            if (owner.getWorld().getName().equals("world_nether"))
                 huntedLocation = GameData.netherLocationBeforePortal.get(target);
         }
 
-        if (player.getWorld().getName().equalsIgnoreCase("world_nether")){
+        if (owner.getWorld().getName().equalsIgnoreCase("world_nether")){
             Location lodeStoneLocation = new Location(huntedLocation.getWorld(), huntedLocation.getBlockX(), 0, huntedLocation.getBlockZ());
             lodeStoneLocation.getBlock().setType(Material.LODESTONE);
 
@@ -107,16 +112,16 @@ public class HunterRole extends AManhuntRole implements Listener {
             compassMeta.setLodestone(null);
             compassMeta.setLodestoneTracked(false);
             event.getItem().setItemMeta(compassMeta);
-            player.setCompassTarget(huntedLocation);
+            owner.setCompassTarget(huntedLocation);
         }
     }
 
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event)
     {
-        if (speedrunnerList.contains(event.getPlayer())) return;
+        if (event.getPlayer() != owner) return;
 
         ItemStack item = new ItemStack(Material.COMPASS);
-        event.getPlayer().getInventory().setItem(0, item);
+        event.getPlayer().getInventory().addItem(item);
     }
 }

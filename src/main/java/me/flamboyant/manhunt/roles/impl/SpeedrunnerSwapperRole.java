@@ -1,9 +1,11 @@
-package me.flamboyant.manhunt.roles.impl;
+package me.flamboyant.gamemodes.newmanhunt.roles.impl;
 
-import me.flamboyant.utils.Common;
-import me.flamboyant.utils.ItemHelper;
-import me.flamboyant.manhunt.GameData;
-import me.flamboyant.manhunt.views.PlayerSelectionView;
+import me.flamboyant.common.utils.ChatColorUtils;
+import me.flamboyant.common.utils.Common;
+import me.flamboyant.common.utils.ItemHelper;
+import me.flamboyant.gamemodes.newmanhunt.GameData;
+import me.flamboyant.gamemodes.newmanhunt.views.PlayerSelectionView;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -24,18 +26,17 @@ public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
     }
 
     @Override
-    protected boolean doStop() {
-        PlayerInteractEvent.getHandlerList().unregister(this);
-        InventoryCloseEvent.getHandlerList().unregister(this);
-        return super.doStop();
-    }
-
-    @Override
     protected boolean doStart() {
         owner.getInventory().addItem(getTargetSelectionItem());
 
         roleView = new PlayerSelectionView(GameData.playerClassList.keySet().stream().filter(p -> p != owner).collect(Collectors.toList()), "Death Swapper Selection");
         return super.doStart();
+    }
+
+    @Override
+    protected boolean doStop() {
+        owner.setCooldown(Material.RECOVERY_COMPASS, 0);
+        return super.doStop();
     }
 
     @Override
@@ -49,8 +50,10 @@ public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
                 " Cela intervertit vos position au moment du clic !";
     }
 
+    @Override
     @EventHandler
-    public void onInteractWithSelectionItem(PlayerInteractEvent event) {
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        super.onPlayerInteract(event);
         if (event.getPlayer() != owner) return;
         if (!ItemHelper.isExactlySameItemKind(event.getItem(), getTargetSelectionItem())) return;
         event.setCancelled(true);
@@ -59,18 +62,32 @@ public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
         owner.openInventory(roleView.getView());
     }
 
+    @Override
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
+        super.onInventoryClose(event);
         if (event.getPlayer() != owner) return;
         if (event.getInventory() != roleView.getView()) return;
+        if (owner.getCooldown(Material.RECOVERY_COMPASS) > 0) return;
 
-        Player target = roleView.getSelectedPlayer();
-        roleView.close();
-        Location ownerLocation = owner.getLocation();
-        owner.teleport(target.getLocation());
-        target.teleport(ownerLocation);
+        Bukkit.getScheduler().runTaskLater(Common.plugin, () -> doCountDown(6), 1 * 20);
 
-        owner.setCooldown(Material.RECOVERY_COMPASS, 5 * 20);
+        owner.setCooldown(Material.RECOVERY_COMPASS, 5 * 60 * 20);
+    }
+
+    private void doCountDown(int seconds) {
+        int next = seconds - 1;
+        if (next > 0) {
+            owner.sendMessage(ChatColorUtils.feedback(next + " secondes avant swap !"));
+            Bukkit.getScheduler().runTaskLater(Common.plugin, () -> doCountDown(next), 1 * 20);
+        }
+        else {
+            Player target = roleView.getSelectedPlayer();
+            roleView.close();
+            Location ownerLocation = owner.getLocation();
+            owner.teleport(target.getLocation());
+            target.teleport(ownerLocation);
+        }
     }
 
     private ItemStack getTargetSelectionItem() {

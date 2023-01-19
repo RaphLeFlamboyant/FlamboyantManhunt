@@ -1,4 +1,4 @@
-package me.flamboyant.manhunt.roles;
+package me.flamboyant.gamemodes.newmanhunt.roles;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -29,6 +29,7 @@ public abstract class AManhuntRole {
             return false;
         }
 
+        broadcastPlayerResultMessage();
         running = doStop();
 
         return true;
@@ -40,6 +41,7 @@ public abstract class AManhuntRole {
 
     protected abstract boolean doStop();
     protected abstract boolean doStart();
+    protected abstract void broadcastPlayerResultMessage();
 
     protected abstract String getName();
     protected abstract String getDescription();
