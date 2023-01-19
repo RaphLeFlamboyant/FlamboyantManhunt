@@ -1,7 +1,7 @@
 package me.flamboyant.manhunt.views;
 
-import me.flamboyant.common.utils.Common;
-import me.flamboyant.common.utils.ItemHelper;
+import me.flamboyant.utils.Common;
+import me.flamboyant.utils.ItemHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

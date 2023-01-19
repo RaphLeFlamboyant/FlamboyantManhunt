@@ -1,9 +1,10 @@
 package me.flamboyant.manhunt;
 
-import me.flamboyant.common.parameters.*;
-import me.flamboyant.common.utils.ChatColorUtils;
-import me.flamboyant.common.utils.Common;
-import me.flamboyant.common.utils.ILaunchablePlugin;
+import me.flamboyant.configurable.*;
+import me.flamboyant.configurable.parameters.*;
+import me.flamboyant.utils.ChatColorUtils;
+import me.flamboyant.utils.Common;
+import me.flamboyant.utils.ILaunchablePlugin;
 import me.flamboyant.manhunt.roles.GameRolesManagement;
 import me.flamboyant.manhunt.roles.ManhuntRoleFactory;
 import me.flamboyant.manhunt.roles.ManhuntRoleIdentifier;

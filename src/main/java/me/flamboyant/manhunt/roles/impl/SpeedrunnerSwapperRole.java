@@ -1,7 +1,7 @@
 package me.flamboyant.manhunt.roles.impl;
 
-import me.flamboyant.common.utils.Common;
-import me.flamboyant.common.utils.ItemHelper;
+import me.flamboyant.utils.Common;
+import me.flamboyant.utils.ItemHelper;
 import me.flamboyant.manhunt.GameData;
 import me.flamboyant.manhunt.views.PlayerSelectionView;
 import org.bukkit.Location;

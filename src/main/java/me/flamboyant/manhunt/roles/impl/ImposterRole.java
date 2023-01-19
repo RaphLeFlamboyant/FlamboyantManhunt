@@ -1,6 +1,6 @@
 package me.flamboyant.manhunt.roles.impl;
 
-import me.flamboyant.common.utils.ChatColorUtils;
+import me.flamboyant.utils.ChatColorUtils;
 import me.flamboyant.manhunt.roles.ManhuntRoleType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EnderDragon;

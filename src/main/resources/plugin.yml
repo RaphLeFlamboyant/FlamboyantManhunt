@@ -2,3 +2,7 @@ name: Manhunt
 version: '${project.version}'
 main: me.flamboyant.manhunt.Main
 api-version: 1.19
+commands:
+  f_manhunt:
+    description: Launches the manhunt
+    permission: f_manhunt.use
