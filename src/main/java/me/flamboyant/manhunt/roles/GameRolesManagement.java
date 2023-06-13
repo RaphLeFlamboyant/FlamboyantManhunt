@@ -1,7 +1,7 @@
-package me.flamboyant.gamemodes.newmanhunt.roles;
+package me.flamboyant.manhunt.roles;
 
-import me.flamboyant.common.parameters.EnumParameter;
-import me.flamboyant.common.utils.Common;
+import me.flamboyant.configurable.parameters.EnumParameter;
+import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 

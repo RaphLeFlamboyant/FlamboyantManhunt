@@ -37,6 +37,11 @@ public class ItemFarmerRole extends AManhuntRole implements Listener {
     }
 
     @Override
+    protected void broadcastPlayerResultMessage() {
+        Bukkit.broadcastMessage(ChatColorUtils.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (carftedItems.size() >= 500 ? "gagné" : "perdu") + " !"));
+    }
+
+    @Override
     protected String getName() {
         return "Farmeur d'items";
     }

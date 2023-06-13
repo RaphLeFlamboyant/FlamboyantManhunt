@@ -1,6 +1,6 @@
-package me.flamboyant.gamemodes.newmanhunt.roles.impl;
+package me.flamboyant.manhunt.roles.impl;
 
-import me.flamboyant.common.utils.Common;
+import me.flamboyant.utils.Common;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;

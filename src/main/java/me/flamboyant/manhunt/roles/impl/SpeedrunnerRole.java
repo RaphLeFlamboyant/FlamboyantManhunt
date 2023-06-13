@@ -1,12 +1,12 @@
-package me.flamboyant.gamemodes.newmanhunt.roles.impl;
+package me.flamboyant.manhunt.roles.impl;
 
-import me.flamboyant.common.utils.ChatColorUtils;
-import me.flamboyant.common.utils.Common;
-import me.flamboyant.gamemodes.newmanhunt.GameData;
-import me.flamboyant.gamemodes.newmanhunt.NewManhuntManager;
-import me.flamboyant.gamemodes.newmanhunt.roles.AManhuntRole;
-import me.flamboyant.gamemodes.newmanhunt.roles.ManhuntRoleType;
-import me.flamboyant.gamemodes.newmanhunt.views.PlayerSelectionView;
+import me.flamboyant.manhunt.roles.AManhuntRole;
+import me.flamboyant.manhunt.roles.ManhuntRoleType;
+import me.flamboyant.manhunt.GameData;
+import me.flamboyant.manhunt.NewManhuntManager;
+import me.flamboyant.manhunt.views.PlayerSelectionView;
+import me.flamboyant.utils.ChatColorUtils;
+import me.flamboyant.utils.Common;
 import org.bukkit.*;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EntityType;

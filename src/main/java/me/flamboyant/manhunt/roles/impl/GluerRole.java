@@ -1,8 +1,8 @@
-package me.flamboyant.gamemodes.newmanhunt.roles.impl;
+package me.flamboyant.manhunt.roles.impl;
 
-import me.flamboyant.common.utils.ChatColorUtils;
-import me.flamboyant.common.utils.Common;
-import me.flamboyant.gamemodes.newmanhunt.roles.ManhuntRoleType;
+import me.flamboyant.utils.ChatColorUtils;
+import me.flamboyant.utils.Common;
+import me.flamboyant.manhunt.roles.ManhuntRoleType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;

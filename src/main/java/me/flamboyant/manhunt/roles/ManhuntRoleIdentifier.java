@@ -1,4 +1,4 @@
-package me.flamboyant.gamemodes.newmanhunt.roles;
+package me.flamboyant.manhunt.roles;
 
 public enum ManhuntRoleIdentifier {
     // Bad design but f*ck : Names must start with corresponding ManhuntRoleType

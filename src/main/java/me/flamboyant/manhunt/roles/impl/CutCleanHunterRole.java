@@ -1,4 +1,4 @@
-package me.flamboyant.gamemodes.newmanhunt.roles.impl;
+package me.flamboyant.manhunt.roles.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

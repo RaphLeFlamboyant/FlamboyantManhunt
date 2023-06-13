@@ -1,10 +1,10 @@
-package me.flamboyant.gamemodes.newmanhunt.roles.impl;
+package me.flamboyant.manhunt.roles.impl;
 
-import me.flamboyant.common.utils.ChatColorUtils;
-import me.flamboyant.common.utils.Common;
-import me.flamboyant.common.utils.ItemHelper;
-import me.flamboyant.gamemodes.newmanhunt.GameData;
-import me.flamboyant.gamemodes.newmanhunt.views.PlayerSelectionView;
+import me.flamboyant.utils.ChatColorUtils;
+import me.flamboyant.utils.Common;
+import me.flamboyant.utils.ItemHelper;
+import me.flamboyant.manhunt.GameData;
+import me.flamboyant.manhunt.views.PlayerSelectionView;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

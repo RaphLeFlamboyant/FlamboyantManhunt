@@ -1,4 +1,4 @@
-package me.flamboyant.gamemodes.newmanhunt.roles;
+package me.flamboyant.manhunt.roles;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

@@ -1,6 +1,6 @@
-package me.flamboyant.gamemodes.newmanhunt.roles;
+package me.flamboyant.manhunt.roles;
 
-import me.flamboyant.gamemodes.newmanhunt.roles.impl.*;
+import me.flamboyant.manhunt.roles.impl.*;
 import org.bukkit.entity.Player;
 
 public class ManhuntRoleFactory {

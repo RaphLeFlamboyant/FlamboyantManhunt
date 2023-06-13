@@ -1,4 +1,4 @@
-package me.flamboyant.gamemodes.newmanhunt.roles.impl;
+package me.flamboyant.manhunt.roles.impl;
 
 public class SuperHunterRole {
 }
