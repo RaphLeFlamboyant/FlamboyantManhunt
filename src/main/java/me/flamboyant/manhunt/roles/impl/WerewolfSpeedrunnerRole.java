@@ -1,6 +1,6 @@
 package me.flamboyant.manhunt.roles.impl;
 
-import me.flamboyant.utils.ChatColorUtils;
+import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -74,12 +74,12 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
 
         powerActivated = isActive;
         if (!isActive) {
-            owner.sendMessage(ChatColorUtils.feedback("Vous n'avez plus vos pouvoirs pour le moment. Votre boussole redevient normale."));
+            owner.sendMessage(ChatHelper.feedback("Vous n'avez plus vos pouvoirs pour le moment. Votre boussole redevient normale."));
             owner.setCompassTarget(owner.getBedSpawnLocation());
         }
         else {
             owner.setCooldown(Material.COMPASS, 0);
-            owner.sendMessage(ChatColorUtils.feedback("Vous obtenez enfin vos pouvoirs"));
+            owner.sendMessage(ChatHelper.feedback("Vous obtenez enfin vos pouvoirs"));
         }
     }
 }

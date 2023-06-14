@@ -1,6 +1,6 @@
 package me.flamboyant.manhunt.roles.impl;
 
-import me.flamboyant.utils.ChatColorUtils;
+import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import me.flamboyant.manhunt.roles.AManhuntRole;
 import me.flamboyant.manhunt.roles.ManhuntRoleType;
@@ -23,7 +23,7 @@ public class ItemFarmerRole extends AManhuntRole implements Listener {
 
     @Override
     protected boolean doStop() {
-        Bukkit.broadcastMessage(ChatColorUtils.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (carftedItems.size() >= 500 ? "gagné" : "perdu") + " !"));
+        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (carftedItems.size() >= 500 ? "gagné" : "perdu") + " !"));
 
         CraftItemEvent.getHandlerList().unregister(this);
         EntityPickupItemEvent.getHandlerList().unregister(this);
@@ -38,7 +38,7 @@ public class ItemFarmerRole extends AManhuntRole implements Listener {
 
     @Override
     protected void broadcastPlayerResultMessage() {
-        Bukkit.broadcastMessage(ChatColorUtils.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (carftedItems.size() >= 500 ? "gagné" : "perdu") + " !"));
+        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (carftedItems.size() >= 500 ? "gagné" : "perdu") + " !"));
     }
 
     @Override
@@ -76,8 +76,8 @@ public class ItemFarmerRole extends AManhuntRole implements Listener {
 
     private void checkVictory() {
         if (carftedItems.size() < 500)
-            owner.sendMessage(ChatColorUtils.feedback("Encore " + (500 - carftedItems.size()) + " items pour gagner !"));
+            owner.sendMessage(ChatHelper.feedback("Encore " + (500 - carftedItems.size()) + " items pour gagner !"));
         else if (carftedItems.size() == 500)
-            owner.sendMessage(ChatColorUtils.feedback("Tu as obtenu le nombre d'items requis pour gagner !"));
+            owner.sendMessage(ChatHelper.feedback("Tu as obtenu le nombre d'items requis pour gagner !"));
     }
 }

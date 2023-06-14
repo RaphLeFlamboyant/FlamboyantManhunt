@@ -1,6 +1,6 @@
 package me.flamboyant.manhunt;
 
-import me.flamboyant.configurable.gui.ConfigurablePluginListener;
+import me.flamboyant.gui.ConfigurablePluginListener;
 import me.flamboyant.utils.ILaunchablePlugin;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -23,23 +23,23 @@ public class CommandsDispatcher implements CommandExecutor {
                 default :
                     break;
             }
-            if (pluginToLaunch != null) handleTwist(commandSender, pluginToLaunch);
+            if (pluginToLaunch != null) launchPlugin(commandSender, pluginToLaunch);
             return true;
         }
         return false;
     }
 
-    private void handleTwist(Player sender, ILaunchablePlugin twist) {
-        if (twist.isRunning()) {
+    private void launchPlugin(Player sender, ILaunchablePlugin plugin) {
+        if (plugin.isRunning()) {
             sender.sendMessage(ChatColor.RED + "Plugin stopped");
-            twist.stop();
+            plugin.stop();
             return;
         }
 
-        twist.resetParameters();
+        plugin.resetParameters();
 
         if (!ConfigurablePluginListener.getInstance().isLaunched())
-            ConfigurablePluginListener.getInstance().launch(twist, sender);
+            ConfigurablePluginListener.getInstance().launch(plugin, sender);
 
         sender.sendMessage("Plugin started");
     }

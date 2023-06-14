@@ -1,8 +1,7 @@
 package me.flamboyant.manhunt;
 
-import me.flamboyant.configurable.*;
 import me.flamboyant.configurable.parameters.*;
-import me.flamboyant.utils.ChatColorUtils;
+import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import me.flamboyant.utils.ILaunchablePlugin;
 import me.flamboyant.manhunt.roles.GameRolesManagement;
@@ -57,9 +56,9 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
     private void initializePlayerRolesParameter() {
         playerRoles.clear();
         for (Player player : Common.server.getOnlinePlayers()) {
-
             EnumParameter<ManhuntRoleIdentifier> param = new EnumParameter<>(Material.PLAYER_HEAD, player.getDisplayName(), "Select role", ManhuntRoleIdentifier.class);
             param.setIsNullable(true);
+            param.setCategory("Players Role");
             playerRoles.put(player, param);
         }
     }
@@ -94,12 +93,18 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
 
     @Override
     public void resetParameters() {
-        resetPlayersStuffParameter.setValue(1);
-        specialRolesOnlyParameter.setValue(0);
-        surpriseSpeedrunnerParameter.setValue(0);
+        resetPlayersStuffParameter = new BooleanParameter(Material.CHEST, "Reset stuff", "Reset le stuff au lancement");
+        resetPlayersStuffParameter.setCategory("Manhunt Parameters");
+        specialRolesOnlyParameter = new BooleanParameter(Material.NETHER_STAR, "Special only", "Random role = special");
+        specialRolesOnlyParameter.setCategory("Manhunt Parameters");
+        surpriseSpeedrunnerParameter = new BooleanParameter(Material.CREEPER_HEAD, "Hidden Speedrunner", "True = Speedrunner caché avant roles");
+        surpriseSpeedrunnerParameter.setCategory("Manhunt Parameters");
         speedrunnerCountParameter = new IntParameter(Material.DIAMOND_BOOTS, "Speedrunners count", "0 = random", 1, 0, Common.server.getOnlinePlayers().size());
+        speedrunnerCountParameter.setCategory("Manhunt Parameters");
         allyCountParameter = new IntParameter(Material.GOLDEN_APPLE, "Allies count", "0 = random", 0, 0, Common.server.getOnlinePlayers().size());
-        minutesBeforeRolesParameter.setValue(initialMinutesBeforeRoles);
+        allyCountParameter.setCategory("Manhunt Parameters");
+        minutesBeforeRolesParameter = new IntParameter(Material.CLOCK, "Roles time", "Minutes avant annonce rôles", initialMinutesBeforeRoles, 0, 20);
+        minutesBeforeRolesParameter.setCategory("Manhunt Parameters");
 
         for (ILaunchablePlugin plugin : optionalPlugin) {
             plugin.resetParameters();
@@ -121,7 +126,6 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
             res.add(allyCountParameter);
             res.add(specialRolesOnlyParameter);
             res.add(surpriseSpeedrunnerParameter);
-            res.add(new SectionParameter("Role selection", "_"));
             for (Player player : playerRoles.keySet()) {
                 res.add(new ValueOfPlayerParameter(playerRoles.get(player), "Role de ", player.getDisplayName(), ""));
             }
@@ -130,7 +134,6 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
         for (ILaunchablePlugin plugin : optionalPlugin) {
             if (includeNonModifiable || plugin.canModifyParametersOnTheFly())
             {
-                res.add(new SectionParameter(plugin.getClass().getSimpleName(), "_"));
                 res.addAll(plugin.getParameters());
             }
         }
@@ -150,7 +153,7 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
         if (event.getEntity().getType() != EntityType.ENDER_DRAGON) return;
         EnderDragon dragon = (EnderDragon) event.getEntity();
         if (dragon.getHealth() - event.getFinalDamage() <= 0) {
-            Bukkit.broadcastMessage(ChatColorUtils.feedback("Le speedrunner a gagné !!!"));
+            Bukkit.broadcastMessage(ChatHelper.feedback("Le speedrunner a gagné !!!"));
             stop();
         }
     }

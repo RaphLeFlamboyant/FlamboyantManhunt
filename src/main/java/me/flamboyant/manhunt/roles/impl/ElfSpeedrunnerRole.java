@@ -52,7 +52,7 @@ public class ElfSpeedrunnerRole extends SpeedrunnerRole {
         return "Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
                 "Tirer à l'arc envoie une salve de 5 flèches. " +
                 "Tirer à l'abalète t'inflige des dégâts. " +
-                "Régénration auto dans les biomes forêts et lush cave.";
+                "Régénération auto dans les biomes forêts et lush cave.";
     }
 
     @EventHandler

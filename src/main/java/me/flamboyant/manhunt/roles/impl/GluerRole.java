@@ -1,6 +1,6 @@
 package me.flamboyant.manhunt.roles.impl;
 
-import me.flamboyant.utils.ChatColorUtils;
+import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import me.flamboyant.manhunt.roles.ManhuntRoleType;
 import org.bukkit.Bukkit;
@@ -38,7 +38,7 @@ public class GluerRole extends HunterRole {
 
     @Override
     protected void broadcastPlayerResultMessage() {
-        Bukkit.broadcastMessage(ChatColorUtils.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (totalChecks / validChecks < 3 ? "gagné" : "perdu") + " !"));
+        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (totalChecks / validChecks < 3 ? "gagné" : "perdu") + " !"));
     }
 
     @Override

@@ -3,7 +3,7 @@ package me.flamboyant.manhunt.roles.impl;
 import me.flamboyant.manhunt.GameData;
 import me.flamboyant.manhunt.roles.AManhuntRole;
 import me.flamboyant.manhunt.roles.ManhuntRoleType;
-import me.flamboyant.utils.ChatColorUtils;
+import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import me.flamboyant.utils.ItemHelper;
 import org.bukkit.Bukkit;
@@ -67,7 +67,7 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
 
     @Override
     protected void broadcastPlayerResultMessage() {
-        Bukkit.broadcastMessage(ChatColorUtils.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (GameData.remainingSpeedrunner == 0 ? "gagné" : "perdu") + " !"));
+        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (GameData.remainingSpeedrunner == 0 ? "gagné" : "perdu") + " !"));
     }
 
     @Override

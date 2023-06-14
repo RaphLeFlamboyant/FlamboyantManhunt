@@ -1,6 +1,6 @@
 package me.flamboyant.manhunt.roles.impl;
 
-import me.flamboyant.utils.ChatColorUtils;
+import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import me.flamboyant.utils.ItemHelper;
 import me.flamboyant.manhunt.GameData;
@@ -78,7 +78,7 @@ public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
     private void doCountDown(int seconds) {
         int next = seconds - 1;
         if (next > 0) {
-            owner.sendMessage(ChatColorUtils.feedback(next + " secondes avant swap !"));
+            owner.sendMessage(ChatHelper.feedback(next + " secondes avant swap !"));
             Bukkit.getScheduler().runTaskLater(Common.plugin, () -> doCountDown(next), 1 * 20);
         }
         else {

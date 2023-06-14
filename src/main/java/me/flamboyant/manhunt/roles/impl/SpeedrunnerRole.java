@@ -5,7 +5,7 @@ import me.flamboyant.manhunt.roles.ManhuntRoleType;
 import me.flamboyant.manhunt.GameData;
 import me.flamboyant.manhunt.NewManhuntManager;
 import me.flamboyant.manhunt.views.PlayerSelectionView;
-import me.flamboyant.utils.ChatColorUtils;
+import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import org.bukkit.*;
 import org.bukkit.entity.EnderDragon;
@@ -57,7 +57,7 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
 
     @Override
     protected void broadcastPlayerResultMessage() {
-        Bukkit.broadcastMessage(ChatColorUtils.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (winconMet ? "gagné" : "perdu") + " !"));
+        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (winconMet ? "gagné" : "perdu") + " !"));
     }
 
     @Override
