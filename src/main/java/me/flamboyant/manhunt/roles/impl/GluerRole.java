@@ -26,7 +26,7 @@ public class GluerRole extends HunterRole {
     protected boolean doStart() {
         checkProximityTask = Bukkit.getScheduler().runTaskTimer(Common.plugin, () -> {
             totalChecks++;
-            for (Player p : speedrunnerList) {
+            for (Player p : Bukkit.getServer().getOnlinePlayers()) {
                 if (p.getWorld() == owner.getWorld() && p.getLocation().distance(owner.getLocation()) < 50) {
                     validChecks++;
                     break;
@@ -48,7 +48,7 @@ public class GluerRole extends HunterRole {
 
     @Override
     protected String getDescription() {
-        return "Tu gagnes si tu as passé plus de un tiers de la partie à moins de 50 blocs d'un speedrunner";
+        return "Tu gagnes si tu as passé plus de un tiers de la partie à moins de 50 blocs d'un joueur";
     }
 
     @Override

@@ -63,7 +63,9 @@ public class NewManhuntManager implements Listener {
     {
         if (GameData.playerClassList.get(event.getEntity()).getRoleType() == ManhuntRoleType.SPEEDRUNNER) {
             if (--GameData.remainingSpeedrunner == 0) {
-                stopGame("L'équipe SPEEDRUNNER a perdu !!!");
+                Bukkit.getScheduler().runTaskLater(Common.plugin,
+                        () -> stopGame("L'équipe SPEEDRUNNER a perdu !!!"),
+                        1);
                 return;
             }
         }

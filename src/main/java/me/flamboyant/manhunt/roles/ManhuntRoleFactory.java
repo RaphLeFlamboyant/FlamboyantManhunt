@@ -20,6 +20,10 @@ public class ManhuntRoleFactory {
                     return new WerewolfSpeedrunnerRole(owner);
             case SPEEDRUNNER_NO_NAMETAG:
                 return new NoNameTagSpeedrunnerRole(owner);
+            case SPEEDRUNNER_CUTCLEAN:
+                return new CutCleanSpeedrunnerRole(owner);
+            case SUPER_HUNTER:
+                return new SuperHunterRole(owner);
             case ALLY_IMPOSTER:
                 return new ImposterRole(owner);
             case NEUTRAL_GLUER:
