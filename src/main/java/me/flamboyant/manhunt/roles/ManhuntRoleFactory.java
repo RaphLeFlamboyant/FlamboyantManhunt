@@ -22,12 +22,16 @@ public class ManhuntRoleFactory {
                 return new NoNameTagSpeedrunnerRole(owner);
             case SPEEDRUNNER_CUTCLEAN:
                 return new CutCleanSpeedrunnerRole(owner);
+            case SPEEDRUNNER_TNT_TACTICAL:
+                return new TntTacticalSpeedrunnerRole(owner);
             case SUPER_HUNTER:
                 return new SuperHunterRole(owner);
             case ALLY_IMPOSTER:
                 return new ImposterRole(owner);
             case NEUTRAL_GLUER:
                 return new GluerRole(owner);
+            case NEUTRAL_UNDECIDED:
+                return new UndecidedRole(owner);
             case HUNTER_CHECKPOINT:
                 return new CheckpointHunterRole(owner);
             case HUNTER_CUTCLEAN:
@@ -36,6 +40,8 @@ public class ManhuntRoleFactory {
                 return new LinkHunterRole(owner);
             case HUNTER_PRO_MINER:
                 return new ProMinerRole(owner);
+            case HUNTER_ELF:
+                return new ElfHunterRole(owner);
             case HUNTER_SIMPLE:
             default:
                 return new HunterRole(owner);

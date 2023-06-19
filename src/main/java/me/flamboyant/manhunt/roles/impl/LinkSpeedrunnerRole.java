@@ -57,10 +57,10 @@ public class LinkSpeedrunnerRole extends SpeedrunnerRole {
 
         event.setDropItems(false);
         int roll = Common.rng.nextInt(100);
-        if (roll > 97)
-            event.getPlayer().getWorld().dropItem(event.getBlock().getLocation(), new ItemStack(Material.EMERALD, 5));
+        if (roll > 93)
+            event.getPlayer().getWorld().dropItem(event.getBlock().getLocation(), new ItemStack(Material.EMERALD, 10));
         if (roll > 24) {
-            event.getPlayer().getWorld().dropItem(event.getBlock().getLocation(), new ItemStack(Material.EMERALD));
+            event.getPlayer().getWorld().dropItem(event.getBlock().getLocation(), new ItemStack(Material.EMERALD, 2));
         }
     }
 }

@@ -1,58 +1,46 @@
 package me.flamboyant.manhunt.roles.impl;
 
-import me.flamboyant.utils.Common;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.Biome;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import java.util.Arrays;
-import java.util.List;
-
-public class ElfSpeedrunnerRole extends SpeedrunnerRole {
+public class ElfHunterRole extends HunterRole {
     private static final int degres = 3;
-    private static final List<Biome> regenBiomes = Arrays.asList(Biome.FOREST, Biome.BIRCH_FOREST, Biome.WARPED_FOREST, Biome.CRIMSON_FOREST, Biome.OLD_GROWTH_BIRCH_FOREST, Biome.DARK_FOREST, Biome.WINDSWEPT_FOREST, Biome.FLOWER_FOREST, Biome.LUSH_CAVES, Biome.TAIGA, Biome.OLD_GROWTH_PINE_TAIGA, Biome.OLD_GROWTH_SPRUCE_TAIGA, Biome.SNOWY_TAIGA, Biome.JUNGLE, Biome.SPARSE_JUNGLE, Biome.BAMBOO_JUNGLE, Biome.MANGROVE_SWAMP);
-    private BukkitTask regenTask;
-
-    public ElfSpeedrunnerRole(Player owner) {
+    public ElfHunterRole(Player owner) {
         super(owner);
     }
 
     @Override
-    protected boolean doStart() {
-        regenTask = Bukkit.getScheduler().runTaskTimer(Common.plugin, () -> {
-            if (regenBiomes.contains(owner.getLocation().getWorld().getBiome(owner.getLocation())))
-                owner.setHealth(owner.getHealth() + 1);
-        }, 5 * 20, 5 * 20);
-
-        return super.doStart();
-    }
-
-    @Override
     protected boolean doStop() {
-        Bukkit.getScheduler().cancelTask(regenTask.getTaskId());
         EntityShootBowEvent.getHandlerList().unregister(this);
         return super.doStop();
     }
 
     @Override
     protected String getName() {
-        return "Speedrunner Elfe";
+        return "Hunter Elfe";
     }
 
     @Override
     protected String getDescription() {
-        return "Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
+        return super.getDescription() +
                 "Tirer à l'arc envoie une salve de 5 flèches. " +
                 "Tirer à l'abalète t'inflige des dégâts. " +
-                "Régénération auto dans les biomes forêts et lush cave.";
+                "Taper un joueur au corps à corps t'inflige des dégâts.";
+    }
+
+    @EventHandler
+    public void onEntityDamagedByEntity(EntityDamageByEntityEvent event) {
+        if (event.getDamager() != owner) return;
+        if (event.getEntity().getType() != EntityType.PLAYER) return;
+
+        owner.damage(4);
     }
 
     @EventHandler

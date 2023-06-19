@@ -83,6 +83,7 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+        if (savedLocation == null) return;
         if (event.getPlayer() != owner) return;
         ItemStack modelItem = getRollbackItem();
         if (!event.hasItem() || !ItemHelper.isSameItemKind(event.getItem(), modelItem)) return;
@@ -110,6 +111,7 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     {
         if (event.getPlayer() != owner) return;
         owner.getInventory().addItem(getRollbackItem());
+        savedLocation = null;
     }
 
     private void scheduleNextCheckpoint() {

@@ -38,7 +38,7 @@ public class GluerRole extends HunterRole {
 
     @Override
     protected void broadcastPlayerResultMessage() {
-        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (totalChecks / validChecks < 3 ? "gagné" : "perdu") + " !"));
+        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (totalChecks / validChecks < 2 ? "gagné" : "perdu") + " !"));
     }
 
     @Override
@@ -48,12 +48,11 @@ public class GluerRole extends HunterRole {
 
     @Override
     protected String getDescription() {
-        return "Tu gagnes si tu as passé plus de un tiers de la partie à moins de 50 blocs d'un joueur";
+        return "Tu gagnes si tu as passé plus de la moitié de la partie à moins de 50 blocs d'un joueur";
     }
 
     @Override
     public ManhuntRoleType getRoleType() {
         return ManhuntRoleType.NEUTRAL;
     }
-    // Solo doit rester proche du speedrunner 50% de la partie
 }

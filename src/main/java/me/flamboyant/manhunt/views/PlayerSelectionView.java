@@ -77,7 +77,6 @@ public class PlayerSelectionView implements Listener {
     public void close() {
         InventoryClickEvent.getHandlerList().unregister(this);
         selectedPlayer = null;
-        selectedPlayer = null;
         view.clear();
         view = null;
     }

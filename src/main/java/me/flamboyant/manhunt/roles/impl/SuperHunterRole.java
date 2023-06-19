@@ -30,9 +30,9 @@ public class SuperHunterRole extends HunterRole {
 
     @Override
     protected String getDescription() {
-        return "Gagne quand tu as tué tous les speedrunners de tes propres mains." +
-                " Tu détiens une boussole qui te donne sa position." +
-                " Si un des speedrunners meurt d'une autre façon alors tu as perdu";
+        return "Gagne quand tu as tué tous les speedrunners de tes propres mains, tu voles alors la victoir aux hunters." +
+                " Si un des speedrunners meurt d'une autre façon alors tu as perdu" +
+                " Tu détiens une boussole qui te donne sa position.";
     }
 
     @Override

@@ -66,7 +66,10 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
 
     @Override
     protected void addCompassCooldown() {
-        owner.setCooldown(Material.COMPASS, 30 * 20);
+        if (powerActivated)
+            owner.setCooldown(Material.COMPASS, 30 * 20);
+        else
+            owner.setCooldown(Material.COMPASS, 15 * 60 * 20);
     }
 
     private void setActivationState(boolean isActive) {
