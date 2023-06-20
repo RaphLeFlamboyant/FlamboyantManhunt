@@ -1,6 +1,7 @@
 package me.flamboyant.manhunt.roles.impl;
 
 import me.flamboyant.manhunt.GameData;
+import me.flamboyant.manhunt.roles.IHunterWinConditionModifier;
 import me.flamboyant.manhunt.roles.ManhuntRoleType;
 import me.flamboyant.utils.ChatHelper;
 import org.bukkit.Bukkit;
@@ -10,7 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
-public class SuperHunterRole extends HunterRole {
+public class SuperHunterRole extends HunterRole implements IHunterWinConditionModifier {
     private int speedRunnerKillCount = 0;
 
     public SuperHunterRole(Player owner) {
@@ -19,7 +20,7 @@ public class SuperHunterRole extends HunterRole {
 
     @Override
     protected void broadcastPlayerResultMessage() {
-        boolean wincon = speedRunnerKillCount >= GameData.playerClassList.values().stream().filter((r) -> r.getRoleType() == ManhuntRoleType.SPEEDRUNNER).count();
+        boolean wincon = isWinning();
         Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (wincon ? "gagné" : "perdu") + " !"));
     }
 
@@ -36,9 +37,21 @@ public class SuperHunterRole extends HunterRole {
     }
 
     @Override
+    protected boolean doStart() {
+        HunterRole.winconModifiers.add(this);
+        return super.doStop();
+    }
+
+    @Override
     protected boolean doStop() {
+        HunterRole.winconModifiers.remove(this);
         EntityDamageEvent.getHandlerList().unregister(this);
         return super.doStop();
+    }
+
+    @Override
+    public boolean isHunterWinPossible() {
+        return !isWinning();
     }
 
     @EventHandler
@@ -51,5 +64,9 @@ public class SuperHunterRole extends HunterRole {
         if (player.getHealth() - event.getFinalDamage() <= 0) {
             speedRunnerKillCount++;
         }
+    }
+
+    private boolean isWinning() {
+        return speedRunnerKillCount >= GameData.playerClassList.values().stream().filter((r) -> r.getRoleType() == ManhuntRoleType.SPEEDRUNNER).count();
     }
 }

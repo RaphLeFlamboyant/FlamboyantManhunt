@@ -1,5 +1,6 @@
 package me.flamboyant.manhunt.roles.impl;
 
+import me.flamboyant.manhunt.roles.IHunterWinConditionModifier;
 import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import me.flamboyant.manhunt.GameData;
@@ -17,10 +18,12 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class HunterRole extends AManhuntRole implements Listener {
+    public static List<IHunterWinConditionModifier> winconModifiers = new ArrayList<>();
     protected List<Player> speedrunnerList;
     protected int targetIndex = 0;
 
@@ -49,7 +52,13 @@ public class HunterRole extends AManhuntRole implements Listener {
 
     @Override
     protected void broadcastPlayerResultMessage() {
-        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (GameData.remainingSpeedrunner == 0 ? "gagné" : "perdu") + " !"));
+        boolean wincon = GameData.remainingSpeedrunner == 0;
+
+        for (IHunterWinConditionModifier modifier : winconModifiers) {
+            wincon &= modifier.isHunterWinPossible();
+        }
+
+        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (wincon ? "gagné" : "perdu") + " !"));
     }
 
     @Override
