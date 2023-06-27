@@ -31,7 +31,6 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     private int savedFoodLevel = 20;
     private float savedSaturation = 10;
     private int savedFireTicks = 0;
-    private ItemStack[] savedInventory;
     private HashSet<PotionEffect> savedEffects = new HashSet<>();
 
     public CheckpointHunterRole(Player owner) {
@@ -46,7 +45,7 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     @Override
     protected String getDescription() {
         return "Gagne quand le speedrunner meurt. Tu obtiens un objet te permettant " +
-                "de revenir à ton dernier checkpoint. Tu auras alors la vie, saturation, effets et équipement " +
+                "de revenir à ton dernier checkpoint. Tu auras alors la vie et la saturation " +
                 "que tu avais au moment de ce checkpoint. Les checkpoints sont faits " +
                 "par le jeu de façon aléatoire et tu n'en auras pas connaissance.";
     }
@@ -103,7 +102,6 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
         for (PotionEffect effect : savedEffects) {
             owner.addPotionEffect(effect);
         }
-        owner.getInventory().setContents(savedInventory);
     }
 
     @EventHandler
@@ -129,7 +127,6 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
             savedEffects.add(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles()));
         }
 
-        savedInventory = owner.getInventory().getContents();
         scheduleNextCheckpoint();
     }
 

@@ -4,12 +4,12 @@ import me.flamboyant.manhunt.GameData;
 import me.flamboyant.manhunt.roles.IHunterWinConditionModifier;
 import me.flamboyant.manhunt.roles.ManhuntRoleType;
 import me.flamboyant.utils.ChatHelper;
+import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 
 public class SuperHunterRole extends HunterRole implements IHunterWinConditionModifier {
     private int speedRunnerKillCount = 0;
@@ -39,13 +39,14 @@ public class SuperHunterRole extends HunterRole implements IHunterWinConditionMo
     @Override
     protected boolean doStart() {
         HunterRole.winconModifiers.add(this);
-        return super.doStop();
+        return super.doStart();
     }
 
     @Override
     protected boolean doStop() {
-        HunterRole.winconModifiers.remove(this);
-        EntityDamageEvent.getHandlerList().unregister(this);
+        EntityDamageByEntityEvent.getHandlerList().unregister(this);
+        Bukkit.getScheduler().runTaskLater(Common.plugin, () -> HunterRole.winconModifiers.remove(this), 20);
+
         return super.doStop();
     }
 
@@ -55,14 +56,15 @@ public class SuperHunterRole extends HunterRole implements IHunterWinConditionMo
     }
 
     @EventHandler
-    public void onEntityDamage(EntityDamageByEntityEvent event) {
+    public void onEntityByEntityDamage(EntityDamageByEntityEvent event) {
         if (event.getEntity().getType() != EntityType.PLAYER) return;
         if (event.getDamager() != owner) return;
 
         Player player = (Player) event.getEntity();
-        if (!(GameData.playerClassList.get(player) instanceof SpeedrunnerRole)) return;
+        if (GameData.playerClassList.get(player).getRoleType() != ManhuntRoleType.SPEEDRUNNER) return;
         if (player.getHealth() - event.getFinalDamage() <= 0) {
             speedRunnerKillCount++;
+            owner.sendMessage("Tu as tué un total de " + speedRunnerKillCount + " speedrunners");
         }
     }
 

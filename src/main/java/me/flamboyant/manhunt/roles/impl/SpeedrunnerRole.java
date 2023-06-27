@@ -78,15 +78,23 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
 
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
-        if (event.getEntity().getType() != EntityType.ENDER_DRAGON) return;
-        EnderDragon dragon = (EnderDragon) event.getEntity();
-        if (dragon.getHealth() - event.getFinalDamage() <= 0) {
-            winconMet = true;
-            if (onWinConTask == null) {
-                onWinConTask = Bukkit.getScheduler().runTaskLater(Common.plugin, () -> {
-                    NewManhuntManager.getInstance().stopGame("Le dragon est mort !");
-                }, 1);
+        if (event.getEntity().getType() == EntityType.ENDER_DRAGON) {
+            EnderDragon dragon = (EnderDragon) event.getEntity();
+            if (dragon.getHealth() - event.getFinalDamage() <= 0) {
+                winconMet = true;
+                if (onWinConTask == null) {
+                    onWinConTask = Bukkit.getScheduler().runTaskLater(Common.plugin, () -> {
+                        NewManhuntManager.getInstance().stopGame("Le dragon est mort !");
+                    }, 1);
+                }
             }
+            return;
+        }
+
+        if (event.getEntity() == owner && owner.getHealth() - event.getFinalDamage() <= 0) {
+            owner.setGameMode(GameMode.SPECTATOR);
+            event.setCancelled(true);
+            doStop();
         }
     }
 
@@ -99,19 +107,6 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
             GameData.overworldLocationBeforePortal.put(player, event.getLocation());
         if (event.getLocation().getWorld().getName().equals("world_nether"))
             GameData.netherLocationBeforePortal.put(player, event.getLocation());
-    }
-
-    @EventHandler
-    public void onPlayerDeath(PlayerDeathEvent event)
-    {
-        if (event.getEntity() != owner) return;
-
-        owner.spigot().respawn();
-
-        Bukkit.getScheduler().runTaskLater(Common.plugin, () -> {
-            if (GameData.remainingSpeedrunner > 0)
-                owner.setGameMode(GameMode.SPECTATOR);
-            }, 1);
     }
 
     @EventHandler

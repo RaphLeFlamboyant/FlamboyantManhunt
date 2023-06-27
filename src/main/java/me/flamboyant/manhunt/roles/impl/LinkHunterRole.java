@@ -7,6 +7,7 @@ import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -23,6 +24,8 @@ public class LinkHunterRole extends HunterRole {
     @Override
     protected boolean doStop() {
         BlockBreakEvent.getHandlerList().unregister(this);
+        PlayerInteractEvent.getHandlerList().unregister(this);
+        EntityDamageByEntityEvent.getHandlerList().unregister(this);
         return super.doStop();
     }
 
@@ -40,12 +43,23 @@ public class LinkHunterRole extends HunterRole {
     }
 
     @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.getDamager() != owner) return;
+        if (owner.getInventory().getItemInMainHand() == null
+                || owner.getInventory().getItemInMainHand().getType() == Material.AIR) return;
+        if (!owner.getInventory().getItemInMainHand().getType().toString().contains("SWORD")) return;
+
+        owner.getWorld().playSound(owner, Sound.ENTITY_VILLAGER_AMBIENT, SoundCategory.VOICE, 1, 1.3f);
+    }
+
+    @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+        super.onPlayerInteract(event);
         if (event.getPlayer() != owner) return;
         if (!event.hasItem()) return;
         if (!event.getItem().getType().toString().contains("SWORD")) return;
 
-        owner.getWorld().playSound(owner, Sound.ENTITY_VILLAGER_AMBIENT, SoundCategory.VOICE, 1, 1);
+        owner.getWorld().playSound(owner, Sound.ENTITY_VILLAGER_AMBIENT, SoundCategory.VOICE, 1, 1.3f);
     }
 
     @EventHandler

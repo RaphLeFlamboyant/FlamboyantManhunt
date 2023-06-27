@@ -51,11 +51,11 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
             World world = owner.getLocation().getWorld();
             long time = world.getTime();
             if (world.getName().toLowerCase().contains("end")
-                    || !world.getName().toLowerCase().contains("nether") && (time < 12300 || time > 23850)) {
+                    || !world.getName().toLowerCase().contains("nether") && (time < 1000 || time > 13000)) {
                 setActivationState(true);
                 PotionEffect effect = new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 7 * 20, 1, false, false);
                 owner.addPotionEffect(effect);
-                effect = new PotionEffect(PotionEffectType.NIGHT_VISION, 7 * 20, 1, false, false);
+                effect = new PotionEffect(PotionEffectType.NIGHT_VISION, 25 * 20, 1, false, false);
                 owner.addPotionEffect(effect);
             }
             else setActivationState(false);

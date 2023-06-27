@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 
 public class GameData {
-    public static HashMap<Player, AManhuntRole> playerClassList;
+    public static HashMap<Player, AManhuntRole> playerClassList = new HashMap<>();
     public static HashMap<Player, Location> overworldLocationBeforePortal = new HashMap<>();
     public static HashMap<Player, Location> netherLocationBeforePortal = new HashMap<>();
     public static int remainingSpeedrunner;

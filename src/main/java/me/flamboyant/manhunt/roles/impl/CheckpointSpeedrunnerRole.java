@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -21,7 +22,7 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
     private int savedFoodLevel = 20;
     private float savedSaturation = 10;
     private int savedFireTicks = 0;
-    private ItemStack[] savedInventory;
+    private ArrayList<ItemStack> savedInventory = new ArrayList<>();
     private HashSet<PotionEffect> savedEffects = new HashSet<>();
 
     public CheckpointSpeedrunnerRole(Player owner) {
@@ -43,6 +44,8 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
     }
     @Override
     protected boolean doStart() {
+        owner.setCooldown(getCheckpointItem().getType(), 0);
+        owner.setCooldown(getRollbackItem().getType(), 0);
         owner.getInventory().addItem(getCheckpointItem());
         owner.getInventory().addItem(getRollbackItem());
         return super.doStart();
@@ -51,8 +54,8 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
     @Override
     protected boolean doStop() {
         PlayerInteractEvent.getHandlerList().unregister(this);
-        owner.setCooldown(Material.WRITABLE_BOOK, 0);
-        owner.setCooldown(Material.RECOVERY_COMPASS, 0);
+        owner.setCooldown(getCheckpointItem().getType(), 0);
+        owner.setCooldown(getRollbackItem().getType(), 0);
         return super.doStop();
     }
 
@@ -95,7 +98,7 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
         for (PotionEffect effect : savedEffects) {
             owner.addPotionEffect(effect);
         }
-        owner.getInventory().setContents(savedInventory);
+        owner.getInventory().setContents(savedInventory.toArray(new ItemStack[0]));
     }
 
     private void doCheckpoint() {
@@ -109,7 +112,12 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
             savedEffects.add(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles()));
         }
 
-        savedInventory = owner.getInventory().getContents();
+        savedInventory.clear();
+
+        for (ItemStack item : owner.getInventory().getContents()) {
+            if (item == null) continue;
+            savedInventory.add(item.clone());
+        }
     }
 
     private ItemStack getRollbackItem() {
@@ -117,6 +125,6 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     private ItemStack getCheckpointItem() {
-        return ItemHelper.generateItem(Material.WRITABLE_BOOK, 1, "Save State", Arrays.asList("Créer un checkpoint"), true, Enchantment.ARROW_FIRE, true, true);
+        return ItemHelper.generateItem(Material.TARGET, 1, "Save State", Arrays.asList("Créer un checkpoint"), true, Enchantment.ARROW_FIRE, true, true);
     }
 }
