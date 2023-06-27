@@ -1,5 +1,6 @@
 package me.flamboyant.manhunt.roles.impl;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -76,24 +77,26 @@ public class CutCleanSpeedrunnerRole extends SpeedrunnerRole {
     @Override
     public void onEntityDamage(EntityDamageEvent event) {
         super.onEntityDamage(event);
-        if (event.getEntity().getType() == EntityType.PLAYER || event.getEntity() instanceof LivingEntity)
+        if (event.getEntity().getType() == EntityType.PLAYER || !(event.getEntity() instanceof LivingEntity))
             return;
 
         LivingEntity ety = (LivingEntity)event.getEntity();
         if (ety.getHealth() - event.getFinalDamage() <= 0) {
+            Bukkit.getLogger().warning("Le speedrunner a tué un " + ety.getType());
             monstersKilledByPlayer.add(ety);
         }
     }
 
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event) {
+        Bukkit.getLogger().info("onEntityDeath : " + event.getEntity().getType());
         if (!monstersKilledByPlayer.contains(event.getEntity()))
             return;
 
-        monstersKilledByPlayer.remove(event);
+        monstersKilledByPlayer.remove(event.getEntity());
         List<ItemStack> dropList = event.getDrops();
         for (ItemStack item : dropList) {
-            if (meatToCookedMeat.contains(item.getType())) {
+            if (meatToCookedMeat.containsKey(item.getType())) {
                 item.setType(meatToCookedMeat.get(item.getType()));
             }
         }

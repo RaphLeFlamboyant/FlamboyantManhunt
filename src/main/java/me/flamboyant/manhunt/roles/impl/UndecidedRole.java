@@ -26,6 +26,7 @@ public class UndecidedRole extends HunterRole {
     protected boolean doStart() {
         changeTeamTask = Bukkit.getScheduler().runTaskTimer(Common.plugin, () -> {
             currentTeam = currentTeam == ManhuntRoleType.ALLY ? ManhuntRoleType.HUNTER : ManhuntRoleType.ALLY;
+            owner.sendMessage(ChatHelper.importantMessage("Tu es passé dans le camp " + (currentTeam == ManhuntRoleType.ALLY ? "allié du speedrunner" : "hunter")));
         }, 15 * 60 * 20, 15 * 60 * 20);
         return super.doStart();
     }

@@ -122,6 +122,7 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
         List<AParameter> res = new ArrayList<>();
         if (includeNonModifiable) {
             res.add(resetPlayersStuffParameter);
+            res.add(minutesBeforeRolesParameter);
             res.add(speedrunnerCountParameter);
             res.add(allyCountParameter);
             res.add(specialRolesOnlyParameter);

@@ -7,6 +7,7 @@ import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -38,6 +39,16 @@ public class LinkSpeedrunnerRole extends SpeedrunnerRole {
                 "Tu fais un bruit courageaux quand tu attaques avec une épée";
     }
 
+    @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.getDamager() != owner) return;
+        if (owner.getInventory().getItemInMainHand() == null
+                || owner.getInventory().getItemInMainHand().getType() == Material.AIR) return;
+        if (!owner.getInventory().getItemInMainHand().getType().toString().contains("SWORD")) return;
+
+        owner.getWorld().playSound(owner, Sound.ENTITY_VILLAGER_AMBIENT, SoundCategory.VOICE, 1, 1.3f);
+    }
+
     @Override
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
@@ -46,7 +57,7 @@ public class LinkSpeedrunnerRole extends SpeedrunnerRole {
         if (!event.hasItem()) return;
         if (!event.getItem().getType().toString().contains("SWORD")) return;
 
-        owner.getWorld().playSound(owner, Sound.ENTITY_VILLAGER_AMBIENT, SoundCategory.VOICE, 1, 1);
+        owner.getWorld().playSound(owner, Sound.ENTITY_VILLAGER_AMBIENT, SoundCategory.VOICE, 1, 1.3f);
 
     }
 
