@@ -1,27 +1,42 @@
 package me.flamboyant.manhunt;
 
+import com.google.inject.Inject;
+import me.flamboyant.manhunt.application.GameSessionManager;
+import me.flamboyant.manhunt.application.commands.EndGameCommand;
+import me.flamboyant.manhunt.application.commands.StartGameCommand;
+import me.flamboyant.manhunt.application.exceptions.GameStartException;
+import me.flamboyant.manhunt.application.sagas.EndGameSaga;
+import me.flamboyant.manhunt.application.sagas.StartGameSaga;
+import me.flamboyant.manhunt.domain.game.GameSession;
+import me.flamboyant.manhunt.domain.game.GameSessionId;
+import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 import me.flamboyant.configurable.parameters.*;
 import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import me.flamboyant.utils.ILaunchablePlugin;
 import me.flamboyant.manhunt.roles.GameRolesManagement;
-import me.flamboyant.manhunt.roles.ManhuntRoleFactory;
-import me.flamboyant.manhunt.roles.ManhuntRoleIdentifier;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EnderDragon;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class NewManhuntLauncher implements ILaunchablePlugin {
     private boolean running;
+    private GameSessionId currentSessionId;
     private BooleanParameter resetPlayersStuffParameter = new BooleanParameter(Material.CHEST, "Reset stuff", "Reset le stuff au lancement");
     private BooleanParameter specialRolesOnlyParameter = new BooleanParameter(Material.NETHER_STAR, "Special only", "Random role = special");
     private BooleanParameter surpriseSpeedrunnerParameter = new BooleanParameter(Material.CREEPER_HEAD, "Hidden Speedrunner", "True = Speedrunner caché avant roles");
@@ -32,6 +47,10 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
 
     private HashMap<Player, EnumParameter<ManhuntRoleIdentifier>> playerRoles = new HashMap<>();
     private List<ILaunchablePlugin> optionalPlugin = new ArrayList<>();
+
+    private final StartGameSaga startGameSaga;
+    private final EndGameSaga endGameSaga;
+    private final GameSessionManager sessionManager;
 
     private static NewManhuntLauncher instance;
     public static NewManhuntLauncher getInstance()
@@ -44,8 +63,32 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
         return instance;
     }
 
+    /**
+     * Sets the singleton instance (used by DI initialization).
+     * Package-private to prevent external misuse.
+     *
+     * @param launcher DI-managed instance
+     */
+    static void setInstance(NewManhuntLauncher launcher) {
+        instance = launcher;
+    }
+
+    @Inject
+    public NewManhuntLauncher(StartGameSaga startGameSaga, EndGameSaga endGameSaga, GameSessionManager sessionManager)
+    {
+        this.startGameSaga = startGameSaga;
+        this.endGameSaga = endGameSaga;
+        this.sessionManager = sessionManager;
+        setDefaultParameters();
+    }
+
+    // Deprecated: For backwards compatibility with getInstance() pattern
+    // TODO: Remove once all callers use DI
     protected NewManhuntLauncher()
     {
+        this.startGameSaga = null;
+        this.endGameSaga = null;
+        this.sessionManager = GameSessionManager.getInstance();
         setDefaultParameters();
     }
 
@@ -65,16 +108,34 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
 
     @Override
     public boolean start() {
-        if (running || !Launch()) {
+        if (running) {
             return false;
         }
 
-        for (ILaunchablePlugin plugin : optionalPlugin) {
-            plugin.start();
+        // Check if DI is properly configured
+        if (startGameSaga == null) {
+            Bukkit.getLogger().severe("NewManhuntLauncher not properly initialized via dependency injection!");
+            return false;
         }
 
-        running = true;
-        return true;
+        try {
+            // Launch game via saga
+            currentSessionId = Launch();
+            if (currentSessionId == null) {
+                return false;
+            }
+
+            for (ILaunchablePlugin plugin : optionalPlugin) {
+                plugin.start();
+            }
+
+            running = true;
+            return true;
+        } catch (GameStartException e) {
+            Bukkit.getLogger().severe("Failed to start game: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
@@ -83,8 +144,21 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
             return false;
         }
 
+        // Check if DI is properly configured
+        if (endGameSaga == null) {
+            Bukkit.getLogger().severe("NewManhuntLauncher not properly initialized via dependency injection!");
+            return false;
+        }
+
         for (ILaunchablePlugin plugin : optionalPlugin) {
             plugin.stop();
+        }
+
+        // End game via saga
+        if (currentSessionId != null) {
+            EndGameCommand command = new EndGameCommand(currentSessionId, "Game stopped by player");
+            endGameSaga.end(command);
+            currentSessionId = null;
         }
 
         running = false;
@@ -151,11 +225,26 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
 
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
-        if (event.getEntity().getType() != EntityType.ENDER_DRAGON) return;
+        if (event.getEntityType() != EntityType.ENDER_DRAGON) return;
+
         EnderDragon dragon = (EnderDragon) event.getEntity();
+
+        // Check if this damage kills the dragon
         if (dragon.getHealth() - event.getFinalDamage() <= 0) {
-            Bukkit.broadcastMessage(ChatHelper.feedback("Le speedrunner a gagné !!!"));
-            stop();
+            // Determine killer
+            Player killer = null;
+            if (event instanceof EntityDamageByEntityEvent) {
+                Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
+                if (damager instanceof Player) {
+                    killer = (Player) damager;
+                }
+            }
+
+            // Get active session and publish domain event
+            GameSession session = GameSessionManager.getInstance().getActiveSession();
+            if (session != null) {
+                session.notifyDragonKilled(killer);
+            }
         }
     }
 
@@ -170,30 +259,54 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
     }
 
     private int getSpeedrunnerCount() {
-        return (int) playerRoles.values().stream().filter(r -> r.getSelectedValue() != null && r.getSelectedValue().toString().contains("SPEEDRUNNER")).count();
+        return (int) playerRoles.values().stream().filter(r -> r.getSelectedValue() != null && r.getSelectedValue().getRoleType() == ManhuntRoleType.SPEEDRUNNER).count();
     }
 
     private int getAllyCount() {
-        return (int) playerRoles.values().stream().filter(r -> r.getSelectedValue() != null && r.getSelectedValue().toString().contains("ALLY")).count();
+        return (int) playerRoles.values().stream().filter(r -> r.getSelectedValue() != null && r.getSelectedValue().getRoleType() == ManhuntRoleType.ALLY).count();
     }
 
-    private boolean Launch() {
+    private GameSessionId Launch() throws GameStartException {
         int speedrunnerCount = speedrunnerCountParameter.getValue() == 0 ? getSpeedrunnerCount() : speedrunnerCountParameter.getValue();
         int allyCount = allyCountParameter.getValue() == 0 ? getAllyCount() : allyCountParameter.getValue();
-        if (!GameRolesManagement.getInstance().setRandomRolesToEmpty(playerRoles, speedrunnerCount, allyCount, specialRolesOnlyParameter.getValue() > 0))
-            return false;
 
-        GameData.playerClassList.clear();
-        for (Player player : playerRoles.keySet()) {
-            GameData.playerClassList.put(player, ManhuntRoleFactory.createRole(player, playerRoles.get(player).getSelectedValue()));
+        if (!GameRolesManagement.getInstance().setRandomRolesToEmpty(playerRoles, speedrunnerCount, allyCount, specialRolesOnlyParameter.getValue() > 0)) {
+            return null;
         }
 
+        // Reset player states before game start
         for (Player player : Common.server.getOnlinePlayers()) {
             if (player == null) continue;
             resetPlayerState(player);
-            if (resetPlayersStuffParameter.getValue() != 0) player.getInventory().clear();
+            if (resetPlayersStuffParameter.getValue() != 0) {
+                player.getInventory().clear();
+            }
         }
 
-        return NewManhuntManager.getInstance().startGame(minutesBeforeRolesParameter.getValue(), surpriseSpeedrunnerParameter.getValue() > 0);
+        // Build fixed role assignments from player parameters
+        Map<Player, ManhuntRoleIdentifier> fixedRoleAssignments = new HashMap<>();
+        for (Map.Entry<Player, EnumParameter<ManhuntRoleIdentifier>> entry : playerRoles.entrySet()) {
+            if (entry.getValue().getSelectedValue() != null) {
+                fixedRoleAssignments.put(entry.getKey(), entry.getValue().getSelectedValue());
+            }
+        }
+
+        // Build list of all players
+        List<Player> allPlayers = new ArrayList<>(Common.server.getOnlinePlayers());
+
+        // Build start game command
+        StartGameCommand command = StartGameCommand.builder()
+            .players(allPlayers)
+            .fixedRoleAssignments(fixedRoleAssignments)
+            .speedrunnerCount(speedrunnerCount)
+            .allyCount(allyCount)
+            .specialRolesOnly(specialRolesOnlyParameter.getValue() > 0)
+            .resetPlayerStuff(resetPlayersStuffParameter.getValue() != 0)
+            .surpriseSpeedrunner(surpriseSpeedrunnerParameter.getValue() > 0)
+            .minutesBeforeRoleReveal(minutesBeforeRolesParameter.getValue())
+            .build();
+
+        // Start game via saga
+        return startGameSaga.start(command);
     }
 }

@@ -1,7 +1,9 @@
 package me.flamboyant.manhunt.roles;
 
 import me.flamboyant.configurable.parameters.EnumParameter;
-import me.flamboyant.manhunt.GameData;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
+import me.flamboyant.manhunt.domain.role.definition.RoleTypeRegistry;
 import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
@@ -10,6 +12,11 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @deprecated Replaced by RoleDistributionService in application layer.
+ * Will be removed in Priority 10 refactoring.
+ */
+@Deprecated
 public class GameRolesManagement {
     private static GameRolesManagement instance;
     public static GameRolesManagement getInstance()
@@ -45,9 +52,9 @@ public class GameRolesManagement {
             if (roleId == null)
                 continue;
 
-            if (roleId.toString().contains("ALLY"))
+            if (roleId.getRoleType() == ManhuntRoleType.ALLY)
                 allyCount++;
-            if (roleId.toString().contains("SPEEDRUNNER"))
+            if (roleId.getRoleType() == ManhuntRoleType.SPEEDRUNNER)
                 speedrunnerCount++;
         }
 
@@ -79,11 +86,11 @@ public class GameRolesManagement {
     private void distributeRoles(List<Player> players, HashMap<Player, EnumParameter<ManhuntRoleIdentifier>> playersParameter, int wantedSpeedrunnerCount, int wantedAllyCount, boolean specialOnly) {
         Bukkit.getLogger().info("Distributing speedrunners : " + wantedSpeedrunnerCount);
         Bukkit.getLogger().info("Distributing allies : " + wantedAllyCount);
-        List<ManhuntRoleIdentifier> speedrunnerTypes = Arrays.stream(ManhuntRoleIdentifier.values()).filter(v -> v.toString().contains("SPEEDRUNNER") && v != ManhuntRoleIdentifier.SPEEDRUNNER_SIMPLE).collect(Collectors.toList());
-        List<ManhuntRoleIdentifier> allyTypes = Arrays.stream(ManhuntRoleIdentifier.values()).filter(v -> v.toString().contains("ALLY")).collect(Collectors.toList());
-        List<ManhuntRoleIdentifier> hunterTypes = Arrays.stream(ManhuntRoleIdentifier.values()).filter(v -> v.toString().contains("HUNTER") && v != ManhuntRoleIdentifier.HUNTER_SIMPLE).collect(Collectors.toList());
-        List<ManhuntRoleIdentifier> soloTypes = Arrays.stream(ManhuntRoleIdentifier.values()).filter(v -> v.toString().contains("NEUTRAL")).collect(Collectors.toList());
-        long distributedHunter = playersParameter.values().stream().filter((r) -> r.getSelectedValue() != null && r.getSelectedValue().toString().contains("HUNTER")).count();
+        List<ManhuntRoleIdentifier> speedrunnerTypes = new ArrayList<>(RoleTypeRegistry.getRolesByTypeExcluding(ManhuntRoleType.SPEEDRUNNER, ManhuntRoleIdentifier.SPEEDRUNNER_SIMPLE));
+        List<ManhuntRoleIdentifier> allyTypes = new ArrayList<>(RoleTypeRegistry.getRolesByType(ManhuntRoleType.ALLY));
+        List<ManhuntRoleIdentifier> hunterTypes = new ArrayList<>(RoleTypeRegistry.getRolesByTypeExcluding(ManhuntRoleType.HUNTER, ManhuntRoleIdentifier.HUNTER_SIMPLE));
+        List<ManhuntRoleIdentifier> soloTypes = new ArrayList<>(RoleTypeRegistry.getRolesByType(ManhuntRoleType.NEUTRAL));
+        long distributedHunter = playersParameter.values().stream().filter(r -> r.getSelectedValue() != null && r.getSelectedValue().getRoleType() == ManhuntRoleType.HUNTER).count();
         boolean speedrunnersHitSpecial = false;
         for (Player player : shufflePlayers(players)) {
             ManhuntRoleIdentifier roleId;
