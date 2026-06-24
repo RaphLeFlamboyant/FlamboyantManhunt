@@ -75,6 +75,30 @@ public class GameSession {
         return validTargets != null && validTargets.contains(targetPhase);
     }
 
+    /**
+     * Transition to a new game phase.
+     * Validates the transition and publishes PhaseChangedEvent.
+     *
+     * @param newPhase the phase to transition to
+     * @throws IllegalStateException if transition is invalid
+     */
+    public void transitionTo(GamePhase newPhase) {
+        if (newPhase == null) {
+            throw new IllegalArgumentException("New phase cannot be null");
+        }
+
+        if (!canTransitionTo(newPhase)) {
+            throw new IllegalStateException(
+                String.format("Invalid transition from %s to %s", currentPhase, newPhase)
+            );
+        }
+
+        GamePhase oldPhase = currentPhase;
+        currentPhase = newPhase;
+
+        eventPublisher.publish(new PhaseChangedEvent(id, oldPhase, newPhase));
+    }
+
     public void assignRole(Player player, AManhuntRole role) {
         if (player == null) {
             throw new IllegalArgumentException("Player cannot be null");
