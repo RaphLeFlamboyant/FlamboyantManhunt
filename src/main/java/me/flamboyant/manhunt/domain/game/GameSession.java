@@ -17,6 +17,7 @@ public class GameSession {
     private final PortalTracker portalTracker;
     private final DomainEventPublisher eventPublisher;
     private int remainingSpeedrunners;
+    private GamePhase currentPhase = GamePhase.PREPARATION;
 
     // Constructor with defaults (for backward compatibility)
     public GameSession(GameSessionId id) {
@@ -47,6 +48,15 @@ public class GameSession {
 
     public DomainEventPublisher getEventPublisher() {
         return eventPublisher;
+    }
+
+    /**
+     * Get the current game phase.
+     *
+     * @return current phase
+     */
+    public GamePhase getCurrentPhase() {
+        return currentPhase;
     }
 
     public void assignRole(Player player, AManhuntRole role) {
