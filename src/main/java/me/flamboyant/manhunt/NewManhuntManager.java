@@ -1,6 +1,7 @@
 package me.flamboyant.manhunt;
 
 import me.flamboyant.manhunt.domain.game.GameSession;
+import me.flamboyant.manhunt.domain.game.GamePhase;
 import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
 import me.flamboyant.manhunt.domain.role.behavior.SpeedrunnerRole;
 import me.flamboyant.manhunt.domain.role.behavior.DamageOutcome;
@@ -51,6 +52,9 @@ public class NewManhuntManager implements Listener {
 
         // Game ended cleanup
         publisher.subscribe(GameEndedEvent.class, this::onGameEnded);
+
+        // Phase change handler
+        publisher.subscribe(PhaseChangedEvent.class, this::onPhaseChanged);
     }
 
     /**
@@ -105,6 +109,25 @@ public class NewManhuntManager implements Listener {
 
         // Session cleanup (will call eventPublisher.unsubscribeAll())
         session.end();
+    }
+
+    /**
+     * Handle phase changes by activating phase-specific behavior.
+     * When entering ACTIVE phase: start roles, register listeners, reveal roles.
+     */
+    private void onPhaseChanged(PhaseChangedEvent event) {
+        if (event.getNewPhase() == GamePhase.ACTIVE) {
+            // Start all roles
+            for (AManhuntRole role : session.getAllRoles().values()) {
+                role.start();
+            }
+
+            // Register Bukkit event listeners for manhunt mechanics
+            Common.server.getPluginManager().registerEvents(this, Common.plugin);
+
+            // Publish roles revealed event
+            session.notifyRolesRevealed();
+        }
     }
 
     public boolean startGame(GameSession session, int roleRevealDelayInMinutes, boolean speedrunnerSurprise) {
