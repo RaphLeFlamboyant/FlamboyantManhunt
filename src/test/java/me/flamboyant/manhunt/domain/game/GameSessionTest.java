@@ -7,14 +7,14 @@ import me.flamboyant.manhunt.domain.tracking.InMemoryPortalTracker;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,7 +24,7 @@ public class GameSessionTest {
     private Player mockPlayer;
     private AManhuntRole mockRole;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         session = new GameSession(GameSessionId.generate());
         mockPlayer = mock(Player.class);
@@ -40,9 +40,9 @@ public class GameSessionTest {
         assertEquals(id, session.getId());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConstructor_rejectsNullId() {
-        new GameSession(null);
+        assertThrows(IllegalArgumentException.class, () -> new GameSession(null));
     }
 
     @Test
@@ -64,14 +64,14 @@ public class GameSessionTest {
         assertEquals(role2, session.getRole(mockPlayer));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testAssignRole_rejectsNullPlayer() {
-        session.assignRole(null, mockRole);
+        assertThrows(IllegalArgumentException.class, () -> session.assignRole(null, mockRole));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testAssignRole_rejectsNullRole() {
-        session.assignRole(mockPlayer, null);
+        assertThrows(IllegalArgumentException.class, () -> session.assignRole(mockPlayer, null));
     }
 
     @Test
@@ -161,19 +161,22 @@ public class GameSessionTest {
         assertEquals(loc2, session.getPortalLocation(mockPlayer, World.Environment.NORMAL));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testRecordPortalEntry_rejectsNullPlayer() {
-        session.recordPortalEntry(null, mock(Location.class), World.Environment.NORMAL);
+        assertThrows(IllegalArgumentException.class,
+            () -> session.recordPortalEntry(null, mock(Location.class), World.Environment.NORMAL));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testRecordPortalEntry_rejectsNullLocation() {
-        session.recordPortalEntry(mockPlayer, null, World.Environment.NORMAL);
+        assertThrows(IllegalArgumentException.class,
+            () -> session.recordPortalEntry(mockPlayer, null, World.Environment.NORMAL));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testRecordPortalEntry_rejectsNullEnvironment() {
-        session.recordPortalEntry(mockPlayer, mock(Location.class), null);
+        assertThrows(IllegalArgumentException.class,
+            () -> session.recordPortalEntry(mockPlayer, mock(Location.class), null));
     }
 
     @Test
@@ -243,10 +246,11 @@ public class GameSessionTest {
         assertEquals(mockPublisher, session.getEventPublisher());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSessionConstructorRejectsNullEventPublisher() {
         GameSessionId id = GameSessionId.generate();
 
-        new GameSession(id, new InMemoryPortalTracker(), null);
+        assertThrows(IllegalArgumentException.class,
+            () -> new GameSession(id, new InMemoryPortalTracker(), null));
     }
 }
