@@ -136,23 +136,24 @@ public class NewManhuntManager implements Listener {
         // Register domain event handlers for this session
         registerEventHandlers(session);
 
+        // Count speedrunners
         session.setRemainingSpeedrunners(0);
-
-        Bukkit.getScheduler().runTaskLater(Common.plugin, () -> {
-            for (Player player : session.getPlayers()) {
-                AManhuntRole role = session.getRole(player);
-                if (role.getRoleType() == ManhuntRoleType.SPEEDRUNNER) {
-                    session.setRemainingSpeedrunners(session.getRemainingSpeedrunners() + 1);
-                }
-                role.start();
+        for (Player player : session.getPlayers()) {
+            AManhuntRole role = session.getRole(player);
+            if (role.getRoleType() == ManhuntRoleType.SPEEDRUNNER) {
+                session.setRemainingSpeedrunners(session.getRemainingSpeedrunners() + 1);
             }
+        }
 
-            if (speedrunnerSurprise)
-                Common.server.getPluginManager().registerEvents(this, Common.plugin);
-        }, (roleRevealDelayInMinutes * 60 + 1) * 20);
-
-        if (!speedrunnerSurprise)
-            Common.server.getPluginManager().registerEvents(this, Common.plugin);
+        if (speedrunnerSurprise) {
+            // Schedule transition to ACTIVE after preparation time
+            Bukkit.getScheduler().runTaskLater(Common.plugin, () -> {
+                session.transitionTo(GamePhase.ACTIVE);
+            }, (roleRevealDelayInMinutes * 60) * 20);
+        } else {
+            // Immediate transition to ACTIVE (no preparation phase)
+            session.transitionTo(GamePhase.ACTIVE);
+        }
 
         // Notify that game has started
         session.notifyGameStarted();
