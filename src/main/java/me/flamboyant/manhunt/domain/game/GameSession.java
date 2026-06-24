@@ -19,6 +19,11 @@ public class GameSession {
     private int remainingSpeedrunners;
     private GamePhase currentPhase = GamePhase.PREPARATION;
 
+    private static final Map<GamePhase, Set<GamePhase>> VALID_TRANSITIONS = Map.of(
+        GamePhase.PREPARATION, Set.of(GamePhase.ACTIVE)
+        // ACTIVE has no valid transitions - game ends instead
+    );
+
     // Constructor with defaults (for backward compatibility)
     public GameSession(GameSessionId id) {
         this(id, new InMemoryPortalTracker(), new InMemoryEventPublisher());
@@ -57,6 +62,17 @@ public class GameSession {
      */
     public GamePhase getCurrentPhase() {
         return currentPhase;
+    }
+
+    /**
+     * Check if transition to target phase is valid from current phase.
+     *
+     * @param targetPhase the phase to transition to
+     * @return true if transition is allowed
+     */
+    public boolean canTransitionTo(GamePhase targetPhase) {
+        Set<GamePhase> validTargets = VALID_TRANSITIONS.get(currentPhase);
+        return validTargets != null && validTargets.contains(targetPhase);
     }
 
     public void assignRole(Player player, AManhuntRole role) {
