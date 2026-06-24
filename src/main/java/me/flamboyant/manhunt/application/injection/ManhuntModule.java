@@ -16,12 +16,16 @@ import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
 import me.flamboyant.manhunt.domain.event.InMemoryEventPublisher;
 import me.flamboyant.manhunt.domain.role.definition.RoleRegistry;
 import me.flamboyant.manhunt.domain.role.behavior.*;
+import me.flamboyant.manhunt.domain.role.distribution.*;
+import me.flamboyant.manhunt.domain.role.distribution.strategies.*;
 import me.flamboyant.manhunt.domain.wincondition.AllSpeedrunnersDeadCondition;
 import me.flamboyant.manhunt.domain.wincondition.DragonKilledCondition;
 import me.flamboyant.manhunt.domain.wincondition.WinConditionEvaluator;
+import me.flamboyant.utils.Common;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
+import java.util.Random;
 
 import static me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier.*;
 
@@ -164,5 +168,29 @@ public class ManhuntModule extends AbstractModule {
                 )
             );
         }
+    }
+
+    @Provides
+    @Singleton
+    public RoleCountStrategy provideRoleCountStrategy() {
+        return new TieredRoleCountStrategy();
+    }
+
+    @Provides
+    @Singleton
+    public ConflictResolutionStrategy provideConflictResolutionStrategy() {
+        return new OverwriteConflictResolution();
+    }
+
+    @Provides
+    @Singleton
+    public RoleAssignmentStrategy provideRoleAssignmentStrategy() {
+        return new ProbabilisticRoleAssignment();
+    }
+
+    @Provides
+    @Singleton
+    public Random provideRandom() {
+        return Common.rng;
     }
 }

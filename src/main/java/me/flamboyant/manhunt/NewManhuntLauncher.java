@@ -16,7 +16,6 @@ import me.flamboyant.configurable.parameters.*;
 import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import me.flamboyant.utils.ILaunchablePlugin;
-import me.flamboyant.manhunt.roles.GameRolesManagement;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EnderDragon;
@@ -269,10 +268,6 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
     private GameSessionId Launch() throws GameStartException {
         int speedrunnerCount = speedrunnerCountParameter.getValue() == 0 ? getSpeedrunnerCount() : speedrunnerCountParameter.getValue();
         int allyCount = allyCountParameter.getValue() == 0 ? getAllyCount() : allyCountParameter.getValue();
-
-        if (!GameRolesManagement.getInstance().setRandomRolesToEmpty(playerRoles, speedrunnerCount, allyCount, specialRolesOnlyParameter.getValue() > 0)) {
-            return null;
-        }
 
         // Reset player states before game start
         for (Player player : Common.server.getOnlinePlayers()) {

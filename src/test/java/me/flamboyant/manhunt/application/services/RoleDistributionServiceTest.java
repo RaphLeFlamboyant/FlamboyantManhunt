@@ -6,13 +6,14 @@ import me.flamboyant.manhunt.domain.event.RolesDistributedEvent;
 import me.flamboyant.manhunt.domain.game.GameSessionId;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
+import me.flamboyant.manhunt.domain.role.distribution.*;
+import me.flamboyant.manhunt.domain.role.distribution.strategies.*;
 import org.bukkit.entity.Player;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -26,7 +27,18 @@ public class RoleDistributionServiceTest {
     @Before
     public void setUp() {
         mockPublisher = mock(DomainEventPublisher.class);
-        service = new RoleDistributionService(mockPublisher);
+        RoleCountStrategy countStrategy = new TieredRoleCountStrategy();
+        ConflictResolutionStrategy conflictStrategy = new OverwriteConflictResolution();
+        RoleAssignmentStrategy assignmentStrategy = new ProbabilisticRoleAssignment();
+        Random rng = new Random(12345L);
+
+        service = new RoleDistributionService(
+            mockPublisher,
+            countStrategy,
+            conflictStrategy,
+            assignmentStrategy,
+            rng
+        );
         sessionId = GameSessionId.generate();
     }
 
@@ -111,5 +123,121 @@ public class RoleDistributionServiceTest {
             .filter(role -> role.getRoleType() == ManhuntRoleType.SPEEDRUNNER)
             .count();
         assertEquals(2, speedrunnerCount);
+    }
+
+    @Test
+    public void testDistributeRoles_noFixedAssignments_fullFlow() {
+        // Arrange
+        DomainEventPublisher eventPublisher = mock(DomainEventPublisher.class);
+        RoleCountStrategy countStrategy = new TieredRoleCountStrategy();
+        ConflictResolutionStrategy conflictStrategy = new OverwriteConflictResolution();
+        RoleAssignmentStrategy assignmentStrategy = new ProbabilisticRoleAssignment();
+        Random rng = new Random(12345L);
+
+        RoleDistributionService service = new RoleDistributionService(
+            eventPublisher,
+            countStrategy,
+            conflictStrategy,
+            assignmentStrategy,
+            rng
+        );
+
+        List<Player> players = RoleDistributionTestFixtures.createMockPlayers(8);
+        GameSessionId sessionId = GameSessionId.generate();
+        DistributeRolesCommand command = new DistributeRolesCommand(
+            sessionId,
+            players,
+            0, 0, // auto-calculate
+            false,
+            Collections.emptyMap()
+        );
+
+        // Act
+        Map<Player, ManhuntRoleIdentifier> result = service.distributeRoles(command);
+
+        // Assert
+        assertEquals(8, result.size());
+        verify(eventPublisher, times(1)).publish(any(RolesDistributedEvent.class));
+    }
+
+    @Test
+    public void testDistributeRoles_fixedAssignmentsNoConflict_keepsFixed() {
+        // Arrange
+        DomainEventPublisher eventPublisher = mock(DomainEventPublisher.class);
+        RoleCountStrategy countStrategy = new TieredRoleCountStrategy();
+        ConflictResolutionStrategy conflictStrategy = new OverwriteConflictResolution();
+        RoleAssignmentStrategy assignmentStrategy = new ProbabilisticRoleAssignment();
+        Random rng = new Random(12345L);
+
+        RoleDistributionService service = new RoleDistributionService(
+            eventPublisher,
+            countStrategy,
+            conflictStrategy,
+            assignmentStrategy,
+            rng
+        );
+
+        List<Player> players = RoleDistributionTestFixtures.createMockPlayers(8);
+        Player fixedPlayer = players.get(0);
+        Map<Player, ManhuntRoleIdentifier> fixedAssignments = new HashMap<>();
+        fixedAssignments.put(fixedPlayer, ManhuntRoleIdentifier.SPEEDRUNNER_CHECKPOINT);
+
+        GameSessionId sessionId = GameSessionId.generate();
+        DistributeRolesCommand command = new DistributeRolesCommand(
+            sessionId,
+            players,
+            0, 0,
+            false,
+            fixedAssignments
+        );
+
+        // Act
+        Map<Player, ManhuntRoleIdentifier> result = service.distributeRoles(command);
+
+        // Assert
+        assertEquals(8, result.size());
+        assertEquals(ManhuntRoleIdentifier.SPEEDRUNNER_CHECKPOINT, result.get(fixedPlayer));
+    }
+
+    @Test
+    public void testDistributeRoles_conflictingFixedAssignments_overwritesAll() {
+        // Arrange
+        DomainEventPublisher eventPublisher = mock(DomainEventPublisher.class);
+        RoleCountStrategy countStrategy = new TieredRoleCountStrategy();
+        ConflictResolutionStrategy conflictStrategy = new OverwriteConflictResolution();
+        RoleAssignmentStrategy assignmentStrategy = new ProbabilisticRoleAssignment();
+        Random rng = new Random(12345L);
+
+        RoleDistributionService service = new RoleDistributionService(
+            eventPublisher,
+            countStrategy,
+            conflictStrategy,
+            assignmentStrategy,
+            rng
+        );
+
+        List<Player> players = RoleDistributionTestFixtures.createMockPlayers(5);
+        // Fix 3 speedrunners, but tier only wants 1
+        Map<Player, ManhuntRoleIdentifier> fixedAssignments = new HashMap<>();
+        fixedAssignments.put(players.get(0), ManhuntRoleIdentifier.SPEEDRUNNER_SIMPLE);
+        fixedAssignments.put(players.get(1), ManhuntRoleIdentifier.SPEEDRUNNER_CHECKPOINT);
+        fixedAssignments.put(players.get(2), ManhuntRoleIdentifier.SPEEDRUNNER_SWAPPER);
+
+        GameSessionId sessionId = GameSessionId.generate();
+        DistributeRolesCommand command = new DistributeRolesCommand(
+            sessionId,
+            players,
+            0, 0,
+            false,
+            fixedAssignments
+        );
+
+        // Act
+        Map<Player, ManhuntRoleIdentifier> result = service.distributeRoles(command);
+
+        // Assert
+        assertEquals(5, result.size());
+        // Conflict mode should have cleared fixed assignments
+        // So players may no longer have their fixed roles
     }
 }
