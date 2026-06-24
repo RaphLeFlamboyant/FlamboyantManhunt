@@ -13,6 +13,8 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,7 +45,7 @@ public class ElfSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Speedrunner Elfe";
     }
 
@@ -53,6 +55,11 @@ public class ElfSpeedrunnerRole extends SpeedrunnerRole {
                 "Tirer à l'arc envoie une salve de 5 flèches. " +
                 "Tirer à l'abalète t'inflige des dégâts. " +
                 "Régénération auto dans les biomes forêts et lush cave.";
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.SPEEDRUNNER_ELF;
     }
 
     @EventHandler

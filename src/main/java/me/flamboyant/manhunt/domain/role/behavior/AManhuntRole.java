@@ -48,9 +48,10 @@ public abstract class AManhuntRole {
     protected abstract boolean doStart();
     protected abstract void broadcastPlayerResultMessage();
 
-    protected abstract String getName();
+    public abstract String getName();
     protected abstract String getDescription();
     public abstract ManhuntRoleType getRoleType();
+    public abstract ManhuntRoleIdentifier getRoleIdentifier();
 
     protected CompassTarget calculateCompassTarget(Player target, GameSession session) {
         Location targetLocation = target.getLocation();

@@ -11,6 +11,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,7 +30,7 @@ public class LinkSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Link Speedrunner";
     }
 
@@ -37,6 +39,11 @@ public class LinkSpeedrunnerRole extends SpeedrunnerRole {
         return "Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
                 "Casser des herbes te drop parfois des émeraudes." +
                 "Tu fais un bruit courageaux quand tu attaques avec une épée";
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.SPEEDRUNNER_LINK;
     }
 
     @EventHandler

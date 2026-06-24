@@ -2,6 +2,7 @@ package me.flamboyant.manhunt.domain.role.behavior;
 
 import me.flamboyant.manhunt.application.GameSessionManager;
 import me.flamboyant.manhunt.domain.game.GameSession;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
@@ -44,7 +45,7 @@ public class UndecidedRole extends HunterRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "L'indécis";
     }
 
@@ -57,5 +58,10 @@ public class UndecidedRole extends HunterRole {
     @Override
     public ManhuntRoleType getRoleType() {
         return ManhuntRoleType.NEUTRAL;
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.NEUTRAL_UNDECIDED;
     }
 }

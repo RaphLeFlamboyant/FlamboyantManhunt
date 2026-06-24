@@ -7,6 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class ProMinerRole extends HunterRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Pro Miner Hunter";
     }
 
@@ -34,6 +36,11 @@ public class ProMinerRole extends HunterRole {
         return "Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
                 "te donne sa position. Parfois en minant de la roche, de la " +
                 "deepslate ou de la netherack, tu obtiens du minerai.";
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.HUNTER_PRO_MINER;
     }
 
     @EventHandler

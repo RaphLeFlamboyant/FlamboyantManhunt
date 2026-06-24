@@ -60,7 +60,7 @@ public class NoNameTagSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "No Nametag Speedrunner";
     }
 

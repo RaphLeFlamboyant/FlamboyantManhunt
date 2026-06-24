@@ -7,6 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+
 import java.util.Hashtable;
 
 public class CutCleanHunterRole extends HunterRole {
@@ -27,7 +29,7 @@ public class CutCleanHunterRole extends HunterRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Cut Clean Hunter";
     }
 
@@ -35,6 +37,11 @@ public class CutCleanHunterRole extends HunterRole {
     protected String getDescription() {
         return "Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
                 "te donne sa position. Tous les minerais sont récoltés cuits.";
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.HUNTER_CUTCLEAN;
     }
 
     @Override

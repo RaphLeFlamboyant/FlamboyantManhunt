@@ -77,7 +77,7 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Speedrunner";
     }
 
@@ -90,6 +90,11 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
     @Override
     public ManhuntRoleType getRoleType() {
         return ManhuntRoleType.SPEEDRUNNER;
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.SPEEDRUNNER_SIMPLE;
     }
 
     @EventHandler

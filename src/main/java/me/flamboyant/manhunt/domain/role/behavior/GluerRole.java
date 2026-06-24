@@ -2,6 +2,7 @@ package me.flamboyant.manhunt.domain.role.behavior;
 
 import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -42,7 +43,7 @@ public class GluerRole extends HunterRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Pot de Colle";
     }
 
@@ -54,5 +55,10 @@ public class GluerRole extends HunterRole {
     @Override
     public ManhuntRoleType getRoleType() {
         return ManhuntRoleType.NEUTRAL;
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.NEUTRAL_GLUER;
     }
 }

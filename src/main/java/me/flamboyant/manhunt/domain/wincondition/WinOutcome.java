@@ -2,6 +2,8 @@ package me.flamboyant.manhunt.domain.wincondition;
 
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -16,7 +18,7 @@ public final class WinOutcome {
     private final WinCondition triggeringCondition;
 
     private WinOutcome(Set<ManhuntRoleType> winners, String description, WinCondition triggeringCondition) {
-        this.winners = Set.copyOf(winners); // Defensive copy for immutability
+        this.winners = Collections.unmodifiableSet(new HashSet<>(winners)); // Defensive copy for immutability
         this.description = Objects.requireNonNull(description, "Description cannot be null");
         this.triggeringCondition = Objects.requireNonNull(triggeringCondition, "Triggering condition cannot be null");
     }
@@ -33,6 +35,70 @@ public final class WinOutcome {
             condition.getDescription(),
             condition
         );
+    }
+
+    /**
+     * Create a WinOutcome for hunters winning with a custom description.
+     * Convenience factory for tests and scenarios where a full WinCondition is not available.
+     *
+     * @param description The win description
+     * @return Immutable WinOutcome with HUNTER as winner
+     */
+    public static WinOutcome huntersWin(String description) {
+        return new WinOutcome(
+            Collections.singleton(me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType.HUNTER),
+            description,
+            new SimpleWinCondition(
+                Collections.singleton(me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType.HUNTER),
+                description
+            )
+        );
+    }
+
+    /**
+     * Create a WinOutcome for speedrunners winning with a custom description.
+     * Convenience factory for tests and scenarios where a full WinCondition is not available.
+     *
+     * @param description The win description
+     * @return Immutable WinOutcome with SPEEDRUNNER as winner
+     */
+    public static WinOutcome speedrunnersWin(String description) {
+        return new WinOutcome(
+            Collections.singleton(me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType.SPEEDRUNNER),
+            description,
+            new SimpleWinCondition(
+                Collections.singleton(me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType.SPEEDRUNNER),
+                description
+            )
+        );
+    }
+
+    /**
+     * Simple win condition implementation for factory methods.
+     */
+    private static class SimpleWinCondition implements WinCondition {
+        private final Set<me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType> winners;
+        private final String description;
+
+        SimpleWinCondition(Set<me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType> winners, String description) {
+            this.winners = winners;
+            this.description = description;
+        }
+
+        @Override
+        public boolean isMet(me.flamboyant.manhunt.domain.game.GameSession session) {
+            return true; // Already met since this is for creating an outcome
+        }
+
+        @Override
+        public Set<me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType> getWinners() {
+            return winners;
+        }
+
+        @Override
+        public String getDescription() {
+            return description;
+        }
     }
 
     /**

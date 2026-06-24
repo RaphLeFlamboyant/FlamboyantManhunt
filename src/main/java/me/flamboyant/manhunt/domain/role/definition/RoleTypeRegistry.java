@@ -41,10 +41,12 @@ public final class RoleTypeRegistry {
     public static List<ManhuntRoleIdentifier> getRolesByTypeExcluding(
             ManhuntRoleType type,
             ManhuntRoleIdentifier... exclusions) {
-        Set<ManhuntRoleIdentifier> excludeSet = Set.of(exclusions);
-        return BY_TYPE.getOrDefault(type, Collections.emptyList())
-            .stream()
-            .filter(id -> !excludeSet.contains(id))
-            .toList();
+        Set<ManhuntRoleIdentifier> excludeSet = new HashSet<>(Arrays.asList(exclusions));
+        return Collections.unmodifiableList(
+            BY_TYPE.getOrDefault(type, Collections.emptyList())
+                .stream()
+                .filter(id -> !excludeSet.contains(id))
+                .collect(Collectors.toList())
+        );
     }
 }

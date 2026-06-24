@@ -4,7 +4,6 @@ import me.flamboyant.manhunt.application.GameSessionManager;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
-import me.flamboyant.manhunt.domain.wincondition.IHunterWinConditionModifier;
 import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
@@ -24,7 +23,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class HunterRole extends AManhuntRole implements Listener {
-    public static List<IHunterWinConditionModifier> winconModifiers = new ArrayList<>();
     private GameSession session;
     protected List<Player> speedrunnerList;
     protected int targetIndex = 0;
@@ -67,16 +65,11 @@ public class HunterRole extends AManhuntRole implements Listener {
     @Override
     protected void broadcastPlayerResultMessage() {
         boolean wincon = session != null && session.getRemainingSpeedrunners() == 0;
-
-        for (IHunterWinConditionModifier modifier : winconModifiers) {
-            wincon &= modifier.isHunterWinPossible();
-        }
-
         Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (wincon ? "gagné" : "perdu") + " !"));
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Hunter";
     }
 
@@ -89,6 +82,11 @@ public class HunterRole extends AManhuntRole implements Listener {
     @Override
     public ManhuntRoleType getRoleType() {
         return ManhuntRoleType.HUNTER;
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.HUNTER_SIMPLE;
     }
 
     private void logCompassUse(Player p) {

@@ -16,6 +16,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -47,7 +49,7 @@ public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Death Swapper Speedrunner";
     }
 
@@ -55,6 +57,11 @@ public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
     protected String getDescription() {
         return super.getDescription() + " Pour t'aider tu as une boussole spéciale qui te permet de sélectionner un joueur toutes les 5 minutes." +
                 " Cela intervertit vos position au moment du clic !";
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.SPEEDRUNNER_SWAPPER;
     }
 
     @Override

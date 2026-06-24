@@ -72,12 +72,39 @@ public class GameLifecycleService {
      * Domain publishes GameEndedEvent.
      *
      * @param command End game command
+     * @return The ended session
      */
-    public void endSession(EndGameCommand command) {
+    public GameSession endSession(EndGameCommand command) {
         GameSession session = sessionManager.getSession(command.getSessionId());
         if (session != null) {
             session.notifyGameEnded(null, command.getReason());
             sessionManager.removeSession(command.getSessionId());
         }
+        return session;
+    }
+
+    /**
+     * Gets a session by ID.
+     *
+     * @param sessionId Session ID
+     * @return Session or null if not found
+     */
+    public GameSession getSession(GameSessionId sessionId) {
+        return sessionManager.getSession(sessionId);
+    }
+
+    /**
+     * Ends a game session by ID.
+     *
+     * @param sessionId Session ID
+     * @return The ended session
+     */
+    public GameSession endSession(GameSessionId sessionId) {
+        GameSession session = sessionManager.getSession(sessionId);
+        if (session != null) {
+            session.notifyGameEnded(null, "Game ended");
+            sessionManager.removeSession(sessionId);
+        }
+        return session;
     }
 }

@@ -156,7 +156,7 @@ public class NewManhuntLauncher implements ILaunchablePlugin {
         // End game via saga
         if (currentSessionId != null) {
             EndGameCommand command = new EndGameCommand(currentSessionId, "Game stopped by player");
-            endGameSaga.end(command);
+            endGameSaga.endGame(command);
             currentSessionId = null;
         }
 

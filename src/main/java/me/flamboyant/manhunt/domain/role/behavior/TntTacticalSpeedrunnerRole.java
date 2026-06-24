@@ -12,6 +12,8 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+
 import java.util.Arrays;
 
 public class TntTacticalSpeedrunnerRole extends SpeedrunnerRole {
@@ -35,7 +37,7 @@ public class TntTacticalSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Speedrunner Tactique TNT";
     }
 
@@ -43,6 +45,11 @@ public class TntTacticalSpeedrunnerRole extends SpeedrunnerRole {
     protected String getDescription() {
         return super.getDescription() + " Tu as également une télécommande qui fait exploser le" +
                 " dernier bloc que tu as posé !";
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.SPEEDRUNNER_TNT_TACTICAL;
     }
 
     @Override

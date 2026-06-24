@@ -4,6 +4,7 @@ import me.flamboyant.manhunt.domain.event.*;
 import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
 import me.flamboyant.manhunt.domain.tracking.PortalTracker;
 import me.flamboyant.manhunt.domain.tracking.InMemoryPortalTracker;
+import me.flamboyant.manhunt.domain.wincondition.WinConditionEvaluator;
 import me.flamboyant.manhunt.domain.wincondition.WinOutcome;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -16,13 +17,17 @@ public class GameSession {
     private final Map<Player, AManhuntRole> playerRoles;
     private final PortalTracker portalTracker;
     private final DomainEventPublisher eventPublisher;
+    private WinConditionEvaluator winConditionEvaluator;
     private int remainingSpeedrunners;
     private GamePhase currentPhase = GamePhase.PREPARATION;
 
-    private static final Map<GamePhase, Set<GamePhase>> VALID_TRANSITIONS = Map.of(
-        GamePhase.PREPARATION, Set.of(GamePhase.ACTIVE)
+    private static final Map<GamePhase, Set<GamePhase>> VALID_TRANSITIONS;
+    static {
+        Map<GamePhase, Set<GamePhase>> transitions = new HashMap<>();
+        transitions.put(GamePhase.PREPARATION, Collections.singleton(GamePhase.ACTIVE));
         // ACTIVE has no valid transitions - game ends instead
-    );
+        VALID_TRANSITIONS = Collections.unmodifiableMap(transitions);
+    }
 
     // Constructor with defaults (for backward compatibility)
     public GameSession(GameSessionId id) {
@@ -53,6 +58,22 @@ public class GameSession {
 
     public DomainEventPublisher getEventPublisher() {
         return eventPublisher;
+    }
+
+    /**
+     * Get the win condition evaluator for this session.
+     * @return the win condition evaluator, or null if not configured
+     */
+    public WinConditionEvaluator getWinConditionEvaluator() {
+        return winConditionEvaluator;
+    }
+
+    /**
+     * Set the win condition evaluator for this session.
+     * @param evaluator the win condition evaluator
+     */
+    public void setWinConditionEvaluator(WinConditionEvaluator evaluator) {
+        this.winConditionEvaluator = evaluator;
     }
 
     /**

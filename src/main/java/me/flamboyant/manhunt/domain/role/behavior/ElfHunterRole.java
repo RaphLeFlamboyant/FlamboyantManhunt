@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import org.bukkit.util.Vector;
 
 public class ElfHunterRole extends HunterRole {
@@ -23,7 +24,7 @@ public class ElfHunterRole extends HunterRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Hunter Elfe";
     }
 
@@ -33,6 +34,11 @@ public class ElfHunterRole extends HunterRole {
                 "Tirer à l'arc envoie une salve de 5 flèches. " +
                 "Tirer à l'abalète t'inflige des dégâts. " +
                 "Taper un joueur au corps à corps t'inflige des dégâts.";
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.HUNTER_ELF;
     }
 
     @EventHandler

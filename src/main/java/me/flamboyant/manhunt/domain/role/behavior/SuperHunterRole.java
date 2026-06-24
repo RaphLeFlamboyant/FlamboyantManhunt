@@ -2,17 +2,22 @@ package me.flamboyant.manhunt.domain.role.behavior;
 
 import me.flamboyant.manhunt.application.GameSessionManager;
 import me.flamboyant.manhunt.domain.game.GameSession;
-import me.flamboyant.manhunt.domain.wincondition.IHunterWinConditionModifier;
+import me.flamboyant.manhunt.domain.wincondition.AllSpeedrunnersDeadCondition;
+import me.flamboyant.manhunt.domain.wincondition.WinCondition;
+import me.flamboyant.manhunt.domain.wincondition.WinConditionModifier;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 import me.flamboyant.utils.ChatHelper;
-import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
-public class SuperHunterRole extends HunterRole implements IHunterWinConditionModifier {
+import java.util.Optional;
+
+public class SuperHunterRole extends HunterRole implements WinConditionModifier {
+    private static final int REQUIRED_KILL_COUNT = 3;
     private int speedRunnerKillCount = 0;
 
     public SuperHunterRole(Player owner) {
@@ -26,7 +31,7 @@ public class SuperHunterRole extends HunterRole implements IHunterWinConditionMo
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Super Hunter";
     }
 
@@ -38,39 +43,77 @@ public class SuperHunterRole extends HunterRole implements IHunterWinConditionMo
     }
 
     @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.SUPER_HUNTER;
+    }
+
+    @Override
     protected boolean doStart() {
-        HunterRole.winconModifiers.add(this);
+        // Register as modifier with evaluator
+        GameSession session = GameSessionManager.getInstance()
+            .getActiveSessionForPlayer(owner);
+        if (session != null && session.getWinConditionEvaluator() != null) {
+            session.getWinConditionEvaluator().registerModifier(this);
+        }
+
         return super.doStart();
     }
 
-    @Override
-    protected boolean doStop() {
-        EntityDamageByEntityEvent.getHandlerList().unregister(this);
-        Bukkit.getScheduler().runTaskLater(Common.plugin, () -> HunterRole.winconModifiers.remove(this), 20);
-
-        return super.doStop();
-    }
-
-    @Override
-    public boolean isHunterWinPossible() {
-        return !isWinning();
-    }
+    // No doStop() override needed - evaluator destroyed with session
 
     @EventHandler
-    public void onEntityByEntityDamage(EntityDamageByEntityEvent event) {
-        if (event.getEntity().getType() != EntityType.PLAYER) return;
-        if (event.getDamager() != owner) return;
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player)) return;
+        if (!(event.getEntity() instanceof Player)) return;
 
-        Player player = (Player) event.getEntity();
-        GameSession session = GameSessionManager.getInstance().getActiveSessionForPlayer(owner);
+        Player damager = (Player) event.getDamager();
+        Player victim = (Player) event.getEntity();
+
+        if (!damager.equals(owner)) return;
+
+        GameSession session = GameSessionManager.getInstance()
+            .getActiveSessionForPlayer(owner);
         if (session == null) return;
 
-        AManhuntRole role = session.getRole(player);
-        if (role == null || role.getRoleType() != ManhuntRoleType.SPEEDRUNNER) return;
-        if (player.getHealth() - event.getFinalDamage() <= 0) {
-            speedRunnerKillCount++;
-            owner.sendMessage("Tu as tué un total de " + speedRunnerKillCount + " speedrunners");
+        AManhuntRole victimRole = session.getRole(victim);
+        if (victimRole == null) return;
+
+        if (victimRole.getRoleType() == ManhuntRoleType.SPEEDRUNNER) {
+            if (victim.getHealth() - event.getFinalDamage() <= 0) {
+                speedRunnerKillCount++;
+                Bukkit.broadcastMessage(ChatHelper.feedback(
+                    owner.getDisplayName() + " (SuperHunter) a tué un speedrunner ! ("
+                    + speedRunnerKillCount + "/" + REQUIRED_KILL_COUNT + ")"
+                ));
+
+                if (speedRunnerKillCount >= REQUIRED_KILL_COUNT) {
+                    Bukkit.broadcastMessage(ChatHelper.feedback(
+                        "SuperHunter peut maintenant permettre la victoire des Hunters !"
+                    ));
+                }
+            }
         }
+    }
+
+    @Override
+    public boolean allowsWin(WinCondition condition, GameSession session) {
+        // Only gate AllSpeedrunnersDead (hunter win)
+        if (condition instanceof AllSpeedrunnersDeadCondition) {
+            return speedRunnerKillCount >= REQUIRED_KILL_COUNT;
+        }
+        return true; // Don't block other win types
+    }
+
+    @Override
+    public Optional<WinCondition> getAlternativeWin(GameSession session) {
+        return Optional.empty(); // No alternative win path
+    }
+
+    /**
+     * Increment kill count (for testing).
+     */
+    public void incrementKillCount() {
+        speedRunnerKillCount++;
     }
 
     private boolean isWinning() {

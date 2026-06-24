@@ -3,6 +3,7 @@ package me.flamboyant.manhunt.domain.wincondition;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -19,7 +20,7 @@ public class AllSpeedrunnersDeadCondition implements WinCondition {
 
     @Override
     public Set<ManhuntRoleType> getWinners() {
-        return Set.of(ManhuntRoleType.HUNTER);
+        return Collections.singleton(ManhuntRoleType.HUNTER);
     }
 
     @Override

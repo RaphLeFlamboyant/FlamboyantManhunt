@@ -1,6 +1,7 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
 import me.flamboyant.utils.ChatHelper;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EnderDragon;
@@ -33,7 +34,7 @@ public class ImposterRole extends HunterRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Imposteur";
     }
 
@@ -45,6 +46,11 @@ public class ImposterRole extends HunterRole {
     @Override
     public ManhuntRoleType getRoleType() {
         return ManhuntRoleType.ALLY;
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.ALLY_IMPOSTER;
     }
 
     @EventHandler

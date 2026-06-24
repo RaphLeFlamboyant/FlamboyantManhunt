@@ -1,5 +1,6 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.utils.ItemHelper;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -30,7 +31,7 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Checkpoint Speedrunner";
     }
 
@@ -41,6 +42,11 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
                 "Le second te permet de revenir à ton dernier checkpoint. " +
                 "Tu auras alors la vie, saturation, effets et équipement " +
                 "que tu avais au moment de ce checkpoint.";
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.SPEEDRUNNER_CHECKPOINT;
     }
     @Override
     protected boolean doStart() {

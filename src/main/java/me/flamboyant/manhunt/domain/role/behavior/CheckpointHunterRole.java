@@ -2,6 +2,7 @@ package me.flamboyant.manhunt.domain.role.behavior;
 
 import me.flamboyant.manhunt.application.GameSessionManager;
 import me.flamboyant.manhunt.domain.game.GameSession;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
@@ -38,7 +39,7 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Checkpoint Hunter";
     }
 
@@ -53,6 +54,11 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     @Override
     public ManhuntRoleType getRoleType() {
         return ManhuntRoleType.HUNTER;
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.HUNTER_CHECKPOINT;
     }
 
     @Override

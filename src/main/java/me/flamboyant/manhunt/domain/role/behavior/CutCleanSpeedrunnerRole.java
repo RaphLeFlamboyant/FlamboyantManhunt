@@ -12,6 +12,8 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -46,13 +48,18 @@ public class CutCleanSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Cutclean Speedrunner";
     }
 
     @Override
     protected String getDescription() {
         return super.getDescription() + " Toutes les viandes et tous les minerais sont récoltés cuits";
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.SPEEDRUNNER_CUTCLEAN;
     }
 
     @Override

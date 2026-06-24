@@ -11,6 +11,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+
 import java.util.List;
 
 public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
@@ -24,7 +26,7 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Speedrunner Garou";
     }
 
@@ -33,6 +35,11 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
         return "Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
                 "La nuit tu obtiens Force 1, Night Vision et tu peux détecter les hunters avec " +
                 "une boussole toutes les 30 secondes";
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.SPEEDRUNNER_WEREWOLF;
     }
 
     @Override

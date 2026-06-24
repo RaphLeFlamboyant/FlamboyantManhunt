@@ -5,6 +5,10 @@ import com.google.inject.Singleton;
 import me.flamboyant.manhunt.application.commands.EndGameCommand;
 import me.flamboyant.manhunt.application.services.GameLifecycleService;
 import me.flamboyant.manhunt.domain.event.GameEndedEvent;
+import me.flamboyant.manhunt.domain.game.GameSession;
+import me.flamboyant.manhunt.domain.wincondition.WinOutcome;
+import me.flamboyant.utils.ChatHelper;
+import org.bukkit.Bukkit;
 
 import java.util.logging.Logger;
 
@@ -31,19 +35,34 @@ public class EndGameSaga {
     }
 
     /**
-     * Entry point - end game.
+     * Entry point - end game with win condition evaluation.
      * Called by infrastructure (NewManhuntLauncher).
+     * Broadcasts role results for each player.
      *
-     * @param command End game command
+     * @param command End game command with win outcome
+     * @return The ended session
      */
-    public void end(EndGameCommand command) {
-        try {
-            lifecycleService.endSession(command);
-        } catch (Exception e) {
-            // End game is best-effort - log but don't fail
-            logger.severe("Error ending game: " + e.getMessage());
-            e.printStackTrace();
+    public GameSession endGame(EndGameCommand command) {
+        // Get session before it's fully cleaned up
+        GameSession session = lifecycleService.getSession(command.getSessionId());
+        WinOutcome outcome = command.getWinOutcome();
+
+        // Broadcast role results for each player
+        if (session != null && outcome != null) {
+            session.getAllRoles().forEach((player, role) -> {
+                boolean playerWon = outcome.getWinners().contains(role.getRoleType());
+                String result = String.format(
+                    "%s, qui était %s a %s !",
+                    player.getDisplayName(),
+                    role.getName(),
+                    playerWon ? "gagné" : "perdu"
+                );
+                Bukkit.broadcastMessage(ChatHelper.feedback(result));
+            });
         }
+
+        // End the session
+        return lifecycleService.endSession(command.getSessionId());
     }
 
     /**

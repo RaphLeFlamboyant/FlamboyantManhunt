@@ -3,6 +3,8 @@ package me.flamboyant.manhunt.application;
 import me.flamboyant.manhunt.domain.game.GameSessionId;
 import org.bukkit.event.Listener;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class HandlerRegistration {
@@ -11,7 +13,7 @@ public class HandlerRegistration {
 
     public HandlerRegistration(GameSessionId sessionId, List<Listener> listeners) {
         this.sessionId = sessionId;
-        this.listeners = List.copyOf(listeners);
+        this.listeners = Collections.unmodifiableList(new ArrayList<>(listeners));
     }
 
     public GameSessionId getSessionId() {

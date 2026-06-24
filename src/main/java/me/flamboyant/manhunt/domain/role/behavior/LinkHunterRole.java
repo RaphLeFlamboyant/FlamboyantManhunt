@@ -11,6 +11,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,7 +32,7 @@ public class LinkHunterRole extends HunterRole {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Link Hunter";
     }
 
@@ -40,6 +42,11 @@ public class LinkHunterRole extends HunterRole {
                 "te donne sa position. " +
                 "Casser des herbes te drop parfois des émeraudes." +
                 "Tu fais un bruit courageaux quand tu attaques avec une épée";
+    }
+
+    @Override
+    public ManhuntRoleIdentifier getRoleIdentifier() {
+        return ManhuntRoleIdentifier.HUNTER_LINK;
     }
 
     @EventHandler
