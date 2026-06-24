@@ -488,75 +488,40 @@ This document tracks progress on the DDD refactoring of the Manhunt plugin. Each
 
 ---
 
-### Priority 8: Add Explicit State Machine ⬜
-**Status:** Not Started  
-**Assigned To:** -  
-**Started:** -  
-**Completed:** -  
+### Priority 8: Add Explicit State Machine ✅
+**Status:** Completed  
+**Assigned To:** Claude Sonnet 4.5  
+**Started:** 2026-06-24  
+**Completed:** 2026-06-24  
 **Estimated Effort:** 4-5 hours  
-**Actual Effort:** -
+**Actual Effort:** ~4 hours
 
 #### Tasks
-- [ ] 8.1 Define game phases enum
-  ```java
-  public enum GamePhase {
-      CONFIGURING,
-      COUNTDOWN,
-      ROLE_HIDDEN,
-      ROLE_REVEALED,
-      DRAGON_FIGHT,
-      ENDED
-  }
-  ```
-
-- [ ] 8.2 Add phase to GameSession
-  ```java
-  private GamePhase currentPhase = GamePhase.CONFIGURING;
-  ```
-
-- [ ] 8.3 Define valid transitions
-  - CONFIGURING → COUNTDOWN
-  - COUNTDOWN → ROLE_HIDDEN (if surprise mode) or ROLE_REVEALED
-  - ROLE_HIDDEN → ROLE_REVEALED
-  - ROLE_REVEALED → DRAGON_FIGHT
-  - DRAGON_FIGHT → ENDED
-  - Any phase → ENDED (on error)
-
-- [ ] 8.4 Implement transition validation
-  ```java
-  public void transitionTo(GamePhase newPhase) {
-      if (!canTransitionTo(newPhase)) {
-          throw new IllegalStateException(...);
-      }
-      currentPhase = newPhase;
-  }
-  ```
-
-- [ ] 8.5 Add phase change listeners
-  ```java
-  public interface GamePhaseListener {
-      void onPhaseChange(GamePhase from, GamePhase to);
-  }
-  ```
-
-- [ ] 8.6 Implement phase-specific behavior
-  - On ROLE_REVEALED: reveal roles to players
-  - On ENDED: cleanup resources
-
-- [ ] 8.7 Replace implicit state with explicit phase checks
-  - Replace boolean flags with phase checks
-  - Use phase to determine valid operations
-
-- [ ] 8.8 Write tests
-  - Test valid transitions
-  - Test invalid transitions throw exception
-  - Test phase-specific behavior
+- [x] 8.1 Define game phases enum
+- [x] 8.2 Add phase to GameSession
+- [x] 8.3 Define valid transitions
+- [x] 8.4 Implement transition validation
+- [x] 8.5 Add phase change listeners (via event handlers)
+- [x] 8.6 Implement phase-specific behavior
+- [x] 8.7 Replace implicit state with explicit phase checks
+- [x] 8.8 Write tests
 
 #### Notes
-- **Blockers:** Depends on Priority 1 (GameSession)
-- **Decisions Made:** -
+- **Blockers:** ~~Depends on Priority 1 (GameSession)~~ - RESOLVED
+- **Decisions Made:** 
+  - Two states only (PREPARATION, ACTIVE)
+  - No ENDED state (session destroyed on game end)
+  - Event-driven phase transitions
+  - Static map for transition validation
 - **Questions:** -
-- **Commits:** -
+- **Commits:** 
+  - feat(domain): add GamePhase enum for state machine (Priority 8)
+  - feat(domain): add currentPhase field to GameSession
+  - feat(domain): add transition validation to GameSession
+  - feat(domain): add PhaseChangedEvent
+  - feat(domain): implement transitionTo() with validation and event publishing
+  - feat(domain): add phase change handler to NewManhuntManager
+  - refactor(domain): use phase transitions in startGame()
 
 #### Success Criteria
 - ✅ All game phases explicit
@@ -987,11 +952,11 @@ This document tracks progress on the DDD refactoring of the Manhunt plugin. Each
 
 ### Phase Completion
 - [x] Phase 1: Core Domain (4/4 complete) - **Priorities 1, 2, 3, 4 DONE** ✅
-- [ ] Phase 2: Domain Events & Services (2/3 complete) - **Priorities 5, 6 DONE** ✅ **Priority 8 remaining**
+- [x] Phase 2: Domain Events & Services (3/3 complete) - **Priorities 5, 6, 8 DONE** ✅
 - [ ] Phase 3: Tactical Patterns (1/3 complete) - **Priority 7 DONE** ✅
 - [ ] Phase 4: Infrastructure & Polish (0/3 complete)
 
-### Total Progress: 7/13 priorities completed (54%)
+### Total Progress: 8/13 priorities completed (62%)
 
 ### Time Tracking
 - **Estimated Total:** 57-76 hours
