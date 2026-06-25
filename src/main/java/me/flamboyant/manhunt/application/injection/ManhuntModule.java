@@ -5,6 +5,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 import me.flamboyant.manhunt.NewManhuntManager;
+import me.flamboyant.manhunt.NewManhuntLauncher;
 import me.flamboyant.manhunt.application.GameSessionManager;
 import me.flamboyant.manhunt.application.sagas.EndGameSaga;
 import me.flamboyant.manhunt.application.sagas.StartGameSaga;
@@ -12,6 +13,9 @@ import me.flamboyant.manhunt.application.services.EventHandlerRegistrationServic
 import me.flamboyant.manhunt.application.services.GameLifecycleService;
 import me.flamboyant.manhunt.application.services.RoleAssignmentService;
 import me.flamboyant.manhunt.application.services.RoleDistributionService;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
 import me.flamboyant.manhunt.domain.event.InMemoryEventPublisher;
 import me.flamboyant.manhunt.domain.role.definition.RoleRegistry;
@@ -21,7 +25,11 @@ import me.flamboyant.manhunt.domain.role.distribution.strategies.*;
 import me.flamboyant.manhunt.domain.wincondition.AllSpeedrunnersDeadCondition;
 import me.flamboyant.manhunt.domain.wincondition.DragonKilledCondition;
 import me.flamboyant.manhunt.domain.wincondition.WinConditionEvaluator;
+import me.flamboyant.manhunt.infrastructure.services.BukkitEventRegistrationService;
+import me.flamboyant.manhunt.infrastructure.services.BukkitItemService;
+import me.flamboyant.manhunt.infrastructure.services.BukkitMessageService;
 import me.flamboyant.utils.Common;
+import org.bukkit.Server;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
@@ -64,6 +72,15 @@ public class ManhuntModule extends AbstractModule {
 
         // Event publisher
         bind(DomainEventPublisher.class).toProvider(EventPublisherProvider.class).in(Singleton.class);
+
+        // Bukkit primitives
+        bind(Server.class).toInstance(plugin.getServer());
+        bind(Plugin.class).toInstance(plugin);
+
+        // Infrastructure services
+        bind(MessageService.class).to(BukkitMessageService.class).in(Singleton.class);
+        bind(ItemService.class).to(BukkitItemService.class).in(Singleton.class);
+        bind(EventRegistrationService.class).to(BukkitEventRegistrationService.class).in(Singleton.class);
     }
 
     @Provides
