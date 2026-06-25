@@ -59,7 +59,7 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
 
     @Override
     protected boolean doStop() {
-        PlayerInteractEvent.getHandlerList().unregister(this);
+        // Manual unregistration removed - handled by GameLifecycleService
         owner.setCooldown(getCheckpointItem().getType(), 0);
         owner.setCooldown(getRollbackItem().getType(), 0);
         return super.doStop();

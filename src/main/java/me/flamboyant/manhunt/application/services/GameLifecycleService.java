@@ -3,12 +3,14 @@ package me.flamboyant.manhunt.application.services;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import me.flamboyant.manhunt.application.GameSessionManager;
+import me.flamboyant.manhunt.application.HandlerRegistration;
 import me.flamboyant.manhunt.application.commands.EndGameCommand;
 import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
 import me.flamboyant.manhunt.domain.event.GameSessionCreatedEvent;
 import me.flamboyant.manhunt.domain.event.GameStartedEvent;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.game.GameSessionId;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -17,12 +19,15 @@ import java.util.List;
 public class GameLifecycleService {
     private final GameSessionManager sessionManager;
     private final DomainEventPublisher eventPublisher;
+    private final EventHandlerRegistrationService eventHandlerRegistrationService;
 
     @Inject
     public GameLifecycleService(GameSessionManager sessionManager,
-                                DomainEventPublisher eventPublisher) {
+                                DomainEventPublisher eventPublisher,
+                                EventHandlerRegistrationService eventHandlerRegistrationService) {
         this.sessionManager = sessionManager;
         this.eventPublisher = eventPublisher;
+        this.eventHandlerRegistrationService = eventHandlerRegistrationService;
     }
 
     /**
@@ -69,6 +74,7 @@ public class GameLifecycleService {
 
     /**
      * Ends a game session.
+     * Unregisters handlers, notifies game ended, cleans up.
      * Domain publishes GameEndedEvent.
      *
      * @param command End game command
@@ -76,10 +82,28 @@ public class GameLifecycleService {
      */
     public GameSession endSession(EndGameCommand command) {
         GameSession session = sessionManager.getSession(command.getSessionId());
-        if (session != null) {
-            session.notifyGameEnded(null, command.getReason());
-            sessionManager.removeSession(command.getSessionId());
+        if (session == null) {
+            return null; // Idempotent - already ended
         }
+
+        // Unregister Bukkit event handlers (prevent events reaching stopped roles)
+        HandlerRegistration registration = session.getHandlerRegistration();
+        if (registration != null) {
+            try {
+                eventHandlerRegistrationService.unregisterHandlers(registration);
+            } catch (Exception e) {
+                // Log error but continue cleanup
+                Bukkit.getLogger().severe("Failed to unregister handlers for session " + command.getSessionId() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        // End the session (notifies game ended)
+        session.notifyGameEnded(null, command.getReason());
+
+        // Remove session from manager
+        sessionManager.removeSession(command.getSessionId());
+
         return session;
     }
 
@@ -94,17 +118,36 @@ public class GameLifecycleService {
     }
 
     /**
-     * Ends a game session by ID.
+     * Ends a game session and performs cleanup.
+     * Stops all roles, unregisters Bukkit event handlers, cleans session state.
      *
-     * @param sessionId Session ID
+     * @param sessionId the session ID
      * @return The ended session
      */
     public GameSession endSession(GameSessionId sessionId) {
         GameSession session = sessionManager.getSession(sessionId);
-        if (session != null) {
-            session.notifyGameEnded(null, "Game ended");
-            sessionManager.removeSession(sessionId);
+        if (session == null) {
+            return null; // Idempotent - already ended
         }
+
+        // Unregister Bukkit event handlers (prevent events reaching stopped roles)
+        HandlerRegistration registration = session.getHandlerRegistration();
+        if (registration != null) {
+            try {
+                eventHandlerRegistrationService.unregisterHandlers(registration);
+            } catch (Exception e) {
+                // Log error but continue cleanup
+                Bukkit.getLogger().severe("Failed to unregister handlers for session " + sessionId + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        // End the session (notifies game ended)
+        session.notifyGameEnded(null, "Game ended");
+
+        // Remove session from manager
+        sessionManager.removeSession(sessionId);
+
         return session;
     }
 }

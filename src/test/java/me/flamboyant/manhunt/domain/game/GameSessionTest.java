@@ -1,5 +1,6 @@
 package me.flamboyant.manhunt.domain.game;
 
+import me.flamboyant.manhunt.application.HandlerRegistration;
 import me.flamboyant.manhunt.domain.event.MockEventPublisher;
 import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
@@ -252,5 +253,25 @@ public class GameSessionTest {
 
         assertThrows(IllegalArgumentException.class,
             () -> new GameSession(id, new InMemoryPortalTracker(), null));
+    }
+
+    @Test
+    public void testSetAndGetHandlerRegistration() {
+        HandlerRegistration registration = mock(HandlerRegistration.class);
+        session.setHandlerRegistration(registration);
+        assertEquals(registration, session.getHandlerRegistration());
+    }
+
+    @Test
+    public void testGetHandlerRegistrationReturnsNullByDefault() {
+        assertNull(session.getHandlerRegistration());
+    }
+
+    @Test
+    public void testEndWithNullHandlerRegistrationDoesNotThrow() {
+        session.setHandlerRegistration(null);
+        session.end(); // Should not throw NPE
+        // Verify session still ends properly
+        assertTrue(session.getPlayers().isEmpty());
     }
 }

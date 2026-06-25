@@ -21,11 +21,15 @@ import me.flamboyant.manhunt.domain.event.RolesAssignedEvent;
 import me.flamboyant.manhunt.domain.event.RolesDistributedEvent;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.game.GameSessionId;
+import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -173,10 +177,32 @@ public class StartGameSaga {
         }
 
         try {
-            Listener[] listeners = getListenersForSession(event.getSessionId());
-            HandlerRegistration registration =
-                handlerService.registerHandlers(event.getSessionId(), listeners);
-            workflow.setHandlerRegistration(registration);
+            // Get the game session
+            GameSession session = sessionManager.getSession(event.getSessionId());
+
+            // Collect all role listeners for registration
+            Collection<AManhuntRole> roles = session.getAllRoles().values();
+            List<Listener> roleListeners = new ArrayList<>();
+            for (AManhuntRole role : roles) {
+                if (role instanceof Listener) {
+                    roleListeners.add((Listener) role);
+                }
+            }
+
+            // Register all role handlers at once
+            if (!roleListeners.isEmpty()) {
+                HandlerRegistration registration = handlerService.registerHandlers(
+                    event.getSessionId(),
+                    roleListeners.toArray(new Listener[0])
+                );
+
+                // Store registration in session for cleanup
+                session.setHandlerRegistration(registration);
+                workflow.setHandlerRegistration(registration);
+            }
+
+            // Publish event to progress to next step
+            eventPublisher.publish(new HandlersRegisteredEvent(event.getSessionId()));
 
         } catch (Exception e) {
             compensate(workflow, e);

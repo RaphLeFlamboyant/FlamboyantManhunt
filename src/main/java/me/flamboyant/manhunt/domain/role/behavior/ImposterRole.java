@@ -19,7 +19,7 @@ public class ImposterRole extends HunterRole {
 
     @Override
     protected boolean doStop() {
-        EntityDamageEvent.getHandlerList().unregister(this);
+        // Manual unregistration removed - handled by GameLifecycleService
         return super.doStop();
     }
 

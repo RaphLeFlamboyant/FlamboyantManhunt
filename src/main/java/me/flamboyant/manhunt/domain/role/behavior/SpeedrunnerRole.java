@@ -43,8 +43,7 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
 
     @Override
     protected boolean doStop() {
-        EntityPortalEnterEvent.getHandlerList().unregister(this);
-        EntityDamageEvent.getHandlerList().unregister(this);
+        // Manual unregistration removed - handled by GameLifecycleService
         owner.setCooldown(Material.COMPASS, 0);
         return true;
     }
@@ -63,7 +62,7 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
         session.recordPortalEntry(owner, owner.getLocation(), World.Environment.NETHER);
         session.recordPortalEntry(owner, owner.getLocation(), World.Environment.NORMAL);
 
-        Common.server.getPluginManager().registerEvents(this, Common.plugin);
+        // Manual registration removed - handled by StartGameSaga
         trackView = new PlayerSelectionView(
             session.getPlayers().stream().filter(p -> p != owner).collect(Collectors.toList()),
             "Track Selection"

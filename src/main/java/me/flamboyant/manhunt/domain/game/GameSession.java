@@ -1,5 +1,6 @@
 package me.flamboyant.manhunt.domain.game;
 
+import me.flamboyant.manhunt.application.HandlerRegistration;
 import me.flamboyant.manhunt.domain.event.*;
 import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
 import me.flamboyant.manhunt.domain.tracking.PortalTracker;
@@ -20,6 +21,7 @@ public class GameSession {
     private WinConditionEvaluator winConditionEvaluator;
     private int remainingSpeedrunners;
     private GamePhase currentPhase = GamePhase.PREPARATION;
+    private HandlerRegistration handlerRegistration;
 
     private static final Map<GamePhase, Set<GamePhase>> VALID_TRANSITIONS;
     static {
@@ -74,6 +76,25 @@ public class GameSession {
      */
     public void setWinConditionEvaluator(WinConditionEvaluator evaluator) {
         this.winConditionEvaluator = evaluator;
+    }
+
+    /**
+     * Set the handler registration for this session.
+     * Used to track Bukkit event handlers for automatic cleanup.
+     *
+     * @param registration the handler registration
+     */
+    public void setHandlerRegistration(HandlerRegistration registration) {
+        this.handlerRegistration = registration;
+    }
+
+    /**
+     * Get the handler registration for this session.
+     *
+     * @return the handler registration, or null if not set
+     */
+    public HandlerRegistration getHandlerRegistration() {
+        return handlerRegistration;
     }
 
     /**

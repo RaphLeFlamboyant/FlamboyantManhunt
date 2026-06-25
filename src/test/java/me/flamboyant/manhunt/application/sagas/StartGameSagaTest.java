@@ -21,11 +21,13 @@ import me.flamboyant.manhunt.domain.event.RolesAssignedEvent;
 import me.flamboyant.manhunt.domain.event.RolesDistributedEvent;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.game.GameSessionId;
+import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
 import java.util.Arrays;
@@ -512,6 +514,98 @@ public class StartGameSagaTest {
 
         assertEquals(1, saga.getActiveWorkflowCount());
         assertTrue(saga.hasActiveWorkflow(sessionId));
+    }
+
+    @Test
+    public void testStartGameRegistersRoleHandlers() throws GameStartException {
+        // Arrange
+        GameSessionId sessionId = GameSessionId.generate();
+        GameSession mockSession = mock(GameSession.class);
+        Map<Player, ManhuntRoleIdentifier> roleMap = new HashMap<>();
+        roleMap.put(mockPlayer1, ManhuntRoleIdentifier.SPEEDRUNNER_SIMPLE);
+        roleMap.put(mockPlayer2, ManhuntRoleIdentifier.HUNTER_SIMPLE);
+
+        // Create mock roles that implement Listener
+        AManhuntRole mockRole1 = mock(AManhuntRole.class, withSettings().extraInterfaces(Listener.class));
+        AManhuntRole mockRole2 = mock(AManhuntRole.class, withSettings().extraInterfaces(Listener.class));
+
+        Map<Player, AManhuntRole> roleObjects = new HashMap<>();
+        roleObjects.put(mockPlayer1, mockRole1);
+        roleObjects.put(mockPlayer2, mockRole2);
+
+        HandlerRegistration mockRegistration = mock(HandlerRegistration.class);
+
+        when(mockLifecycle.createSession(any())).thenReturn(sessionId);
+        when(mockSessionManager.getSession(sessionId)).thenReturn(mockSession);
+        when(mockSession.getAllRoles()).thenReturn(roleObjects);
+        when(mockDistribution.distributeRoles(any())).thenReturn(roleMap);
+        when(mockHandlers.registerHandlers(any(GameSessionId.class), any(Listener[].class)))
+            .thenReturn(mockRegistration);
+
+        StartGameCommand command = StartGameCommand.builder()
+            .players(Arrays.asList(mockPlayer1, mockPlayer2))
+            .speedrunnerCount(1)
+            .allyCount(0)
+            .minutesBeforeRoleReveal(10)
+            .build();
+
+        // Act
+        saga.start(command);
+        testPublisher.publish(new GameSessionCreatedEvent(sessionId, command.getPlayers()));
+        testPublisher.publish(new RolesDistributedEvent(sessionId, roleMap));
+        testPublisher.publish(new RolesAssignedEvent(sessionId));
+
+        // Assert - verify handlers were registered
+        verify(mockHandlers).registerHandlers(eq(sessionId), any(Listener[].class));
+
+        // Verify registration stored in session
+        verify(mockSession).setHandlerRegistration(mockRegistration);
+    }
+
+    @Test
+    public void testStartGameRegistersOnlyListenerRoles() throws GameStartException {
+        // Arrange
+        GameSessionId sessionId = GameSessionId.generate();
+        GameSession mockSession = mock(GameSession.class);
+        Map<Player, ManhuntRoleIdentifier> roleMap = new HashMap<>();
+        roleMap.put(mockPlayer1, ManhuntRoleIdentifier.SPEEDRUNNER_SIMPLE);
+        roleMap.put(mockPlayer2, ManhuntRoleIdentifier.HUNTER_SIMPLE);
+
+        // Create mock roles that implement Listener
+        AManhuntRole mockRole1 = mock(AManhuntRole.class, withSettings().extraInterfaces(Listener.class));
+        AManhuntRole mockRole2 = mock(AManhuntRole.class, withSettings().extraInterfaces(Listener.class));
+
+        Map<Player, AManhuntRole> roleObjects = new HashMap<>();
+        roleObjects.put(mockPlayer1, mockRole1);
+        roleObjects.put(mockPlayer2, mockRole2);
+
+        when(mockLifecycle.createSession(any())).thenReturn(sessionId);
+        when(mockSessionManager.getSession(sessionId)).thenReturn(mockSession);
+        when(mockSession.getAllRoles()).thenReturn(roleObjects);
+        when(mockDistribution.distributeRoles(any())).thenReturn(roleMap);
+
+        // Capture registered listeners
+        ArgumentCaptor<Listener[]> listenersCaptor = ArgumentCaptor.forClass(Listener[].class);
+        when(mockHandlers.registerHandlers(any(GameSessionId.class), listenersCaptor.capture()))
+            .thenReturn(mock(HandlerRegistration.class));
+
+        StartGameCommand command = StartGameCommand.builder()
+            .players(Arrays.asList(mockPlayer1, mockPlayer2))
+            .speedrunnerCount(1)
+            .allyCount(0)
+            .minutesBeforeRoleReveal(10)
+            .build();
+
+        // Act
+        saga.start(command);
+        testPublisher.publish(new GameSessionCreatedEvent(sessionId, command.getPlayers()));
+        testPublisher.publish(new RolesDistributedEvent(sessionId, roleMap));
+        testPublisher.publish(new RolesAssignedEvent(sessionId));
+
+        // Assert - verify only Listener instances were registered
+        Listener[] registeredListeners = listenersCaptor.getValue();
+        assertNotNull(registeredListeners);
+        assertEquals(2, registeredListeners.length); // Both roles implement Listener
     }
 
     /**

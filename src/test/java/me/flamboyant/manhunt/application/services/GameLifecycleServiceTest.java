@@ -1,6 +1,7 @@
 package me.flamboyant.manhunt.application.services;
 
 import me.flamboyant.manhunt.application.GameSessionManager;
+import me.flamboyant.manhunt.application.HandlerRegistration;
 import me.flamboyant.manhunt.application.commands.EndGameCommand;
 import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
 import me.flamboyant.manhunt.domain.event.GameSessionCreatedEvent;
@@ -17,18 +18,21 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
 
 public class GameLifecycleServiceTest {
 
     private GameSessionManager mockSessionManager;
     private DomainEventPublisher mockPublisher;
+    private EventHandlerRegistrationService mockEventHandlerService;
     private GameLifecycleService service;
 
     @Before
     public void setUp() {
         mockSessionManager = mock(GameSessionManager.class);
         mockPublisher = mock(DomainEventPublisher.class);
-        service = new GameLifecycleService(mockSessionManager, mockPublisher);
+        mockEventHandlerService = mock(EventHandlerRegistrationService.class);
+        service = new GameLifecycleService(mockSessionManager, mockPublisher, mockEventHandlerService);
     }
 
     @Test
@@ -101,7 +105,10 @@ public class GameLifecycleServiceTest {
         // Arrange
         GameSessionId sessionId = GameSessionId.generate();
         GameSession mockSession = mock(GameSession.class);
+        HandlerRegistration registration = mock(HandlerRegistration.class);
+
         when(mockSessionManager.getSession(sessionId)).thenReturn(mockSession);
+        when(mockSession.getHandlerRegistration()).thenReturn(registration);
 
         EndGameCommand command = new EndGameCommand(sessionId, "Test end");
 
@@ -109,6 +116,7 @@ public class GameLifecycleServiceTest {
         service.endSession(command);
 
         // Assert
+        verify(mockEventHandlerService).unregisterHandlers(registration);
         verify(mockSession).notifyGameEnded(null, "Test end");
         verify(mockSessionManager).removeSession(sessionId);
     }
@@ -126,5 +134,62 @@ public class GameLifecycleServiceTest {
 
         // Assert - should not throw, just no-op
         verify(mockSessionManager, never()).removeSession(any());
+    }
+
+    @Test
+    public void testEndSessionUnregistersHandlers() {
+        // Arrange
+        GameSessionId sessionId = GameSessionId.generate();
+        GameSession mockSession = mock(GameSession.class);
+        HandlerRegistration registration = mock(HandlerRegistration.class);
+
+        when(mockSessionManager.getSession(sessionId)).thenReturn(mockSession);
+        when(mockSession.getHandlerRegistration()).thenReturn(registration);
+
+        // Act
+        service.endSession(sessionId);
+
+        // Assert
+        verify(mockEventHandlerService).unregisterHandlers(registration);
+        verify(mockSession).notifyGameEnded(null, "Game ended");
+        verify(mockSessionManager).removeSession(sessionId);
+    }
+
+    @Test
+    public void testEndSessionWithNullRegistrationDoesNotThrow() {
+        // Arrange
+        GameSessionId sessionId = GameSessionId.generate();
+        GameSession mockSession = mock(GameSession.class);
+
+        when(mockSessionManager.getSession(sessionId)).thenReturn(mockSession);
+        when(mockSession.getHandlerRegistration()).thenReturn(null);
+
+        // Act
+        service.endSession(sessionId);
+
+        // Assert - should not throw NPE
+        verify(mockEventHandlerService, never()).unregisterHandlers(any());
+        verify(mockSession).notifyGameEnded(null, "Game ended");
+        verify(mockSessionManager).removeSession(sessionId);
+    }
+
+    @Test
+    public void testEndSessionHandlesUnregisterException() {
+        // Arrange
+        GameSessionId sessionId = GameSessionId.generate();
+        GameSession mockSession = mock(GameSession.class);
+        HandlerRegistration registration = mock(HandlerRegistration.class);
+
+        when(mockSessionManager.getSession(sessionId)).thenReturn(mockSession);
+        when(mockSession.getHandlerRegistration()).thenReturn(registration);
+        doThrow(new RuntimeException("Unregister failed")).when(mockEventHandlerService).unregisterHandlers(registration);
+
+        // Act
+        service.endSession(sessionId);
+
+        // Assert - should log error but continue cleanup
+        verify(mockEventHandlerService).unregisterHandlers(registration);
+        verify(mockSession).notifyGameEnded(null, "Game ended");
+        verify(mockSessionManager).removeSession(sessionId);
     }
 }

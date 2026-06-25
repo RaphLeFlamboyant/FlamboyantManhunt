@@ -50,14 +50,13 @@ public class HunterRole extends AManhuntRole implements Listener {
         ItemStack item = new ItemStack(Material.COMPASS);
         owner.getInventory().addItem(item);
 
-        Common.server.getPluginManager().registerEvents(this, Common.plugin);
+        // Manual registration removed - handled by StartGameSaga
         return true;
     }
 
     @Override
     protected boolean doStop() {
-        PlayerInteractEvent.getHandlerList().unregister(this);
-        PlayerRespawnEvent.getHandlerList().unregister(this);
+        // Manual unregistration removed - handled by GameLifecycleService
         owner.setCooldown(Material.COMPASS, 0);
         return true;
     }

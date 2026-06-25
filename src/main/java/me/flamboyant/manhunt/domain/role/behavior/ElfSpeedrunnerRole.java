@@ -40,7 +40,7 @@ public class ElfSpeedrunnerRole extends SpeedrunnerRole {
     @Override
     protected boolean doStop() {
         Bukkit.getScheduler().cancelTask(regenTask.getTaskId());
-        EntityShootBowEvent.getHandlerList().unregister(this);
+        // Manual unregistration removed - handled by GameLifecycleService
         return super.doStop();
     }
 

@@ -31,8 +31,7 @@ public class TntTacticalSpeedrunnerRole extends SpeedrunnerRole {
 
     @Override
     protected boolean doStop() {
-        BlockPlaceEvent.getHandlerList().unregister(this);
-        BlockBreakEvent.getHandlerList().unregister(this);
+        // Manual unregistration removed - handled by GameLifecycleService
         return super.doStop();
     }
 

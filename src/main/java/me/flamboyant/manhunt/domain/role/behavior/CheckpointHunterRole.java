@@ -64,7 +64,7 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     @Override
     protected boolean doStart() {
         owner.getInventory().addItem(getRollbackItem());
-        Common.server.getPluginManager().registerEvents(this, Common.plugin);
+        // Manual registration removed - handled by StartGameSaga
 
         nextCheckpointTask = Bukkit.getScheduler().runTaskLater(Common.plugin, () -> doCheckpoint(), 1);
         return true;
@@ -81,8 +81,7 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     protected boolean doStop() {
         Bukkit.getScheduler().cancelTask(nextCheckpointTask.getTaskId());
 
-        PlayerInteractEvent.getHandlerList().unregister(this);
-        PlayerRespawnEvent.getHandlerList().unregister(this);
+        // Manual unregistration removed - handled by GameLifecycleService
 
         owner.setCooldown(Material.RECOVERY_COMPASS, 0);
         return true;

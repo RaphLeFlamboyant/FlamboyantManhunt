@@ -22,7 +22,7 @@ public class ProMinerRole extends HunterRole {
 
     @Override
     protected boolean doStop() {
-        BlockBreakEvent.getHandlerList().unregister(this);
+        // Manual unregistration removed - handled by GameLifecycleService
         return super.doStop();
     }
 

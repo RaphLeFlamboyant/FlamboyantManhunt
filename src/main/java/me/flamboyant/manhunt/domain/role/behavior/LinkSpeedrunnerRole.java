@@ -25,7 +25,7 @@ public class LinkSpeedrunnerRole extends SpeedrunnerRole {
 
     @Override
     protected boolean doStop() {
-        BlockBreakEvent.getHandlerList().unregister(this);
+        // Manual unregistration removed - handled by GameLifecycleService
         return super.doStop();
     }
 
