@@ -15,10 +15,13 @@ public enum ManhuntRoleIdentifier {
     SPEEDRUNNER_ELF(ManhuntRoleType.SPEEDRUNNER),
     SPEEDRUNNER_WEREWOLF(ManhuntRoleType.SPEEDRUNNER),
     SPEEDRUNNER_TNT_TACTICAL(ManhuntRoleType.SPEEDRUNNER),
-    ALLY_IMPOSTER(ManhuntRoleType.ALLY),
-    SUPER_HUNTER(ManhuntRoleType.HUNTER),
-    NEUTRAL_GLUER(ManhuntRoleType.NEUTRAL),
-    NEUTRAL_UNDECIDED(ManhuntRoleType.NEUTRAL);
+    SPEEDRUNNER_NO_NAME_TAG(ManhuntRoleType.SPEEDRUNNER),
+    HUNTER_GLUER(ManhuntRoleType.HUNTER),
+    HUNTER_IMPOSTER(ManhuntRoleType.HUNTER),
+    HUNTER_SUPER(ManhuntRoleType.HUNTER),
+    ALLY_UNDECIDED(ManhuntRoleType.ALLY),
+    ALLY_SIMPLE(ManhuntRoleType.ALLY),
+    NEUTRAL_SIMPLE(ManhuntRoleType.NEUTRAL);
 
     private final ManhuntRoleType roleType;
 

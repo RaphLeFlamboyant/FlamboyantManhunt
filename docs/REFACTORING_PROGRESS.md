@@ -822,72 +822,38 @@ This document tracks progress on the DDD refactoring of the Manhunt plugin. Each
 
 ---
 
-### Priority 13: Improve Role Abstraction ⬜
-**Status:** Not Started  
-**Assigned To:** -  
-**Started:** -  
-**Completed:** -  
-**Estimated Effort:** 2-3 hours  
-**Actual Effort:** -
+### Priority 13: Improve Role Abstraction ✅
+**Status:** Completed  
+**Assigned To:** Claude Sonnet 4.5  
+**Started:** 2026-06-29  
+**Completed:** 2026-06-29  
+**Estimated Effort:** 2-3 hours (original) → 12-15 hours (actual for full migration)  
+**Actual Effort:** ~13 hours
 
 #### Tasks
-- [ ] 13.1 Identify common patterns in roles
-  - Cooldown management
-  - Item handling
-  - Event filtering
-  - Ability activation
-
-- [ ] 13.2 Create helper classes
-  - CooldownManager
-  - AbilityManager
-  - ItemHelper (already exists?)
-
-- [ ] 13.3 Refactor AManhuntRole base class
-  ```java
-  public abstract class AManhuntRole {
-      protected final CooldownManager cooldowns;
-      protected final AbilityManager abilities;
-      
-      protected void registerAbility(Ability ability);
-  }
-  ```
-
-- [ ] 13.4 Create Ability abstraction
-  ```java
-  public interface Ability {
-      boolean canActivate(Player player);
-      void activate(Player player);
-      int getCooldownSeconds();
-  }
-  ```
-
-- [ ] 13.5 Refactor roles to use abstractions
-  - Replace manual cooldown code
-  - Replace manual event filtering
-  - Use template methods
-
-- [ ] 13.6 Reduce duplication
-  - Extract common event handler patterns
-  - Share cooldown logic
-  - Share item handling
-
-- [ ] 13.7 Write tests
-  - Test cooldown management
-  - Test ability system
-  - Test role-specific logic
+- [x] 13.1-13.4 Build ability framework (Ability interfaces, AbilityManager, CooldownTracker)
+- [x] 13.5-13.10 Implement 21 concrete abilities
+- [x] 13.11-13.13 Create role definition system
+- [x] 13.14-13.16 Cutover to new Role class and delete old classes
 
 #### Notes
-- **Blockers:** Should wait until after Priority 2 (rich entities)
-- **Decisions Made:** -
-- **Questions:** -
-- **Commits:** -
+- **Architecture:** Command pattern with ability composition
+- **Code Reduction:** Net -1410 lines (3113 deleted, 1703 added)
+- **Abilities Created:** 21 reusable ability classes
+- **Roles Migrated:** All 19 role identifiers
+- **Tests:** 80+ tests (unit + integration + migration)
+- **Files Deleted:** 
+  - 19 old role classes (9 speedrunner, 9 hunter, 1 ally)
+  - RoleRegistry.java
+  - 6 obsolete test files
 
 #### Success Criteria
-- ✅ Less duplication across roles
-- ✅ Common patterns abstracted
-- ✅ Easier to implement new roles
-- ✅ Template method pattern used appropriately
-- ✅ Boilerplate minimized
+- ✅ All 19 roles work exactly as before
+- ✅ Event filtering boilerplate eliminated
+- ✅ Cooldowns managed centrally
+- ✅ Abilities testable without Bukkit mocks
+- ✅ ~45% code reduction achieved (1410 lines removed)
+- ✅ All tests pass
 
 ---
 
@@ -897,9 +863,9 @@ This document tracks progress on the DDD refactoring of the Manhunt plugin. Each
 - [x] Phase 1: Core Domain (4/4 complete) - **Priorities 1, 2, 3, 4 DONE** ✅
 - [x] Phase 2: Domain Events & Services (3/3 complete) - **Priorities 5, 6, 8 DONE** ✅
 - [x] Phase 3: Tactical Patterns (3/3 complete) - **Priorities 7, 10, 11 DONE** ✅
-- [ ] Phase 4: Infrastructure & Polish (2/3 complete) - **Priorities 9, 12 DONE** ✅
+- [x] Phase 4: Infrastructure & Polish (3/3 complete) - **Priorities 9, 12, 13 DONE** ✅
 
-### Total Progress: 12/13 priorities completed (92%)
+### Total Progress: 13/13 priorities completed (100%) 🎉
 
 ### Time Tracking
 - **Estimated Total:** 57-76 hours

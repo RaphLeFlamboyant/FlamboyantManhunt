@@ -21,9 +21,20 @@ import me.flamboyant.manhunt.application.services.ItemService;
 import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
 import me.flamboyant.manhunt.domain.event.InMemoryEventPublisher;
+import me.flamboyant.manhunt.domain.role.ability.*;
 import me.flamboyant.manhunt.domain.role.definition.AssistedRoleFactory;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
-import me.flamboyant.manhunt.domain.role.definition.RoleRegistry;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
+import me.flamboyant.manhunt.domain.role.definition.RoleDefinition;
+import me.flamboyant.manhunt.domain.role.definition.RoleDefinitionRegistry;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.inventory.ItemStack;
+
+import java.time.Duration;
+
+import static me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier.*;
+import static me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType.*;
 import me.flamboyant.manhunt.domain.role.behavior.*;
 import me.flamboyant.manhunt.domain.role.distribution.*;
 import me.flamboyant.manhunt.domain.role.distribution.strategies.*;
@@ -94,84 +105,12 @@ public class ManhuntModule extends AbstractModule {
     }
 
     /**
-     * Install AssistedInject factories for all role types.
-     * Each role gets a named factory that Guice implements automatically.
-     * Named bindings match ManhuntRoleIdentifier enum values.
+     * Install AssistedInject factory for the new composition-based Role class.
+     * Single factory creates all role types using RoleDefinition.
      */
     private void installRoleFactories() {
-        // Speedrunner roles (8 variants)
         install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_SIMPLE"), SpeedrunnerRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_SWAPPER"), SpeedrunnerSwapperRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_CHECKPOINT"), CheckpointSpeedrunnerRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_TNT_TACTICAL"), TntTacticalSpeedrunnerRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_WEREWOLF"), WerewolfSpeedrunnerRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_ELF"), ElfSpeedrunnerRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_LINK"), LinkSpeedrunnerRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_CUTCLEAN"), CutCleanSpeedrunnerRole.class)
-            .build(AssistedRoleFactory.class));
-
-        // Hunter roles (7 variants)
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("HUNTER_SIMPLE"), HunterRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("HUNTER_CHECKPOINT"), CheckpointHunterRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("HUNTER_PRO_MINER"), ProMinerRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("SUPER_HUNTER"), SuperHunterRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("HUNTER_ELF"), ElfHunterRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("HUNTER_LINK"), LinkHunterRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("HUNTER_CUTCLEAN"), CutCleanHunterRole.class)
-            .build(AssistedRoleFactory.class));
-
-        // Ally and neutral roles (3 variants)
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("NEUTRAL_GLUER"), GluerRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("ALLY_IMPOSTER"), ImposterRole.class)
-            .build(AssistedRoleFactory.class));
-
-        install(new FactoryModuleBuilder()
-            .implement(AManhuntRole.class, Names.named("NEUTRAL_UNDECIDED"), UndecidedRole.class)
+            .implement(AManhuntRole.class, Role.class)
             .build(AssistedRoleFactory.class));
     }
 
@@ -193,30 +132,6 @@ public class ManhuntModule extends AbstractModule {
     @Singleton
     public DragonKilledCondition provideDragonKilledCondition() {
         return new DragonKilledCondition();
-    }
-
-    /**
-     * Provides the RoleRegistry singleton with all role factories registered.
-     * Uses Injector to retrieve AssistedInject factories for each role type.
-     */
-    @Provides
-    @Singleton
-    public RoleRegistry provideRoleRegistry(Injector injector) {
-        RoleRegistry registry = new RoleRegistry();
-
-        // Register all role identifiers with their AssistedInject factories
-        for (ManhuntRoleIdentifier id : ManhuntRoleIdentifier.values()) {
-            try {
-                AssistedRoleFactory<?> factory = injector.getInstance(
-                    Key.get(AssistedRoleFactory.class, Names.named(id.name())));
-                registry.register(id, factory);
-            } catch (Exception e) {
-                // Skip roles without factory bindings (if any)
-                org.bukkit.Bukkit.getLogger().warning("No factory binding for role: " + id.name());
-            }
-        }
-
-        return registry;
     }
 
     /**
@@ -289,5 +204,300 @@ public class ManhuntModule extends AbstractModule {
     @Singleton
     public Random provideRandom() {
         return Common.rng;
+    }
+
+    @Provides
+    @Singleton
+    public RoleDefinitionRegistry provideRoleDefinitionRegistry() {
+        RoleDefinitionRegistry registry = new RoleDefinitionRegistry();
+
+        // Register all 19 roles
+        registerSpeedrunnerVariants(registry);
+        registerHunterVariants(registry);
+        registerAllyVariants(registry);
+
+        return registry;
+    }
+
+    private void registerSpeedrunnerVariants(RoleDefinitionRegistry registry) {
+        // SPEEDRUNNER_SIMPLE
+        registry.register(SPEEDRUNNER_SIMPLE, RoleDefinition.builder()
+            .identifier(SPEEDRUNNER_SIMPLE)
+            .roleType(SPEEDRUNNER)
+            .name("Speedrunner")
+            .description("Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
+                        "Utiliser une boussole te donne la localisation d'un hunter, avec un " +
+                        "cooldown de 15 minutes (mais il te faudra la fabriquer ou la trouver).")
+            .withAbility(ctx -> new UIPickerCompassAbility(ctx, Duration.ofMinutes(15)))
+            .withAbility(ctx -> new DragonWinConditionAbility(ctx))
+            .withAbility(ctx -> new PortalTrackingAbility(ctx))
+            .withAbility(ctx -> new SpeedrunnerDeathAbility(ctx))
+            .build());
+
+        // SPEEDRUNNER_CHECKPOINT
+        CheckpointStorage checkpointStorage = new CheckpointStorage();
+        ItemStack checkpointItem = createCheckpointItem();
+        ItemStack rollbackItem = createRollbackItem();
+
+        registry.register(SPEEDRUNNER_CHECKPOINT, RoleDefinition.builder()
+            .identifier(SPEEDRUNNER_CHECKPOINT)
+            .roleType(SPEEDRUNNER)
+            .name("Checkpoint Speedrunner")
+            .description("Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
+                        "Tu obtiens deux objets. Le premier te permet de poser un checkpoint. " +
+                        "Le second te permet de revenir à ton dernier checkpoint.")
+            .withAbility(ctx -> new UIPickerCompassAbility(ctx, Duration.ofMinutes(15)))
+            .withAbility(ctx -> new DragonWinConditionAbility(ctx))
+            .withAbility(ctx -> new PortalTrackingAbility(ctx))
+            .withAbility(ctx -> new SpeedrunnerDeathAbility(ctx))
+            .withAbility(ctx -> new CheckpointSaveAbility(ctx, checkpointItem, Duration.ofSeconds(15), checkpointStorage))
+            .withAbility(ctx -> new CheckpointRollbackAbility(ctx, rollbackItem, Duration.ofSeconds(15), checkpointStorage))
+            .build());
+
+        // SPEEDRUNNER_LINK
+        registry.register(SPEEDRUNNER_LINK, RoleDefinition.builder()
+            .identifier(SPEEDRUNNER_LINK)
+            .roleType(SPEEDRUNNER)
+            .name("Link Speedrunner")
+            .description("Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
+                        "Casser des herbes te drop parfois des émeraudes. " +
+                        "Tu fais un bruit courageux quand tu attaques avec une épée")
+            .withAbility(ctx -> new UIPickerCompassAbility(ctx, Duration.ofMinutes(15)))
+            .withAbility(ctx -> new DragonWinConditionAbility(ctx))
+            .withAbility(ctx -> new PortalTrackingAbility(ctx))
+            .withAbility(ctx -> new SpeedrunnerDeathAbility(ctx))
+            .withAbility(ctx -> new GrassDropAbility(ctx))
+            .withAbility(ctx -> new SwordSoundAbility(ctx, Sound.ENTITY_VILLAGER_AMBIENT))
+            .build());
+
+        // SPEEDRUNNER_TNT_TACTICAL
+        registry.register(SPEEDRUNNER_TNT_TACTICAL, RoleDefinition.builder()
+            .identifier(SPEEDRUNNER_TNT_TACTICAL)
+            .roleType(SPEEDRUNNER)
+            .name("Speedrunner Tactique TNT")
+            .description("Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
+                        "Tu as également une télécommande qui fait exploser le dernier bloc que tu as posé !")
+            .withAbility(ctx -> new UIPickerCompassAbility(ctx, Duration.ofMinutes(15)))
+            .withAbility(ctx -> new DragonWinConditionAbility(ctx))
+            .withAbility(ctx -> new PortalTrackingAbility(ctx))
+            .withAbility(ctx -> new SpeedrunnerDeathAbility(ctx))
+            .withAbility(ctx -> new TntTacticalAbility(ctx))
+            .build());
+
+        // SPEEDRUNNER_WEREWOLF
+        registry.register(SPEEDRUNNER_WEREWOLF, RoleDefinition.builder()
+            .identifier(SPEEDRUNNER_WEREWOLF)
+            .roleType(SPEEDRUNNER)
+            .name("Speedrunner Garou")
+            .description("Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
+                        "La nuit tu obtiens Force 1, Night Vision et tu peux détecter les hunters avec " +
+                        "une boussole toutes les 30 secondes")
+            .withAbility(ctx -> new UIPickerCompassAbility(ctx, Duration.ofMinutes(15)))
+            .withAbility(ctx -> new DragonWinConditionAbility(ctx))
+            .withAbility(ctx -> new PortalTrackingAbility(ctx))
+            .withAbility(ctx -> new SpeedrunnerDeathAbility(ctx))
+            .withAbility(ctx -> new WerewolfNightStrengthAbility(ctx))
+            .build());
+
+        // SPEEDRUNNER_ELF
+        registry.register(SPEEDRUNNER_ELF, RoleDefinition.builder()
+            .identifier(SPEEDRUNNER_ELF)
+            .roleType(SPEEDRUNNER)
+            .name("Elf Speedrunner")
+            .description("Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
+                        "Tu obtiens Speed 1 et Jump Boost 2 en permanence")
+            .withAbility(ctx -> new UIPickerCompassAbility(ctx, Duration.ofMinutes(15)))
+            .withAbility(ctx -> new DragonWinConditionAbility(ctx))
+            .withAbility(ctx -> new PortalTrackingAbility(ctx))
+            .withAbility(ctx -> new SpeedrunnerDeathAbility(ctx))
+            .withAbility(ctx -> new ElfBonusEffectAbility(ctx))
+            .build());
+
+        // SPEEDRUNNER_CUTCLEAN
+        registry.register(SPEEDRUNNER_CUTCLEAN, RoleDefinition.builder()
+            .identifier(SPEEDRUNNER_CUTCLEAN)
+            .roleType(SPEEDRUNNER)
+            .name("CutClean Speedrunner")
+            .description("Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
+                        "Les minerais et la nourriture sont automatiquement cuits")
+            .withAbility(ctx -> new UIPickerCompassAbility(ctx, Duration.ofMinutes(15)))
+            .withAbility(ctx -> new DragonWinConditionAbility(ctx))
+            .withAbility(ctx -> new PortalTrackingAbility(ctx))
+            .withAbility(ctx -> new SpeedrunnerDeathAbility(ctx))
+            .withAbility(ctx -> new CutCleanAbility(ctx))
+            .build());
+
+        // SPEEDRUNNER_NO_NAME_TAG
+        registry.register(SPEEDRUNNER_NO_NAME_TAG, RoleDefinition.builder()
+            .identifier(SPEEDRUNNER_NO_NAME_TAG)
+            .roleType(SPEEDRUNNER)
+            .name("No Name Tag Speedrunner")
+            .description("Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
+                        "Ton nom est caché au-dessus de ta tête")
+            .withAbility(ctx -> new UIPickerCompassAbility(ctx, Duration.ofMinutes(15)))
+            .withAbility(ctx -> new DragonWinConditionAbility(ctx))
+            .withAbility(ctx -> new PortalTrackingAbility(ctx))
+            .withAbility(ctx -> new SpeedrunnerDeathAbility(ctx))
+            .withAbility(ctx -> new NoNameTagAbility(ctx))
+            .build());
+
+        // SPEEDRUNNER_SWAPPER
+        registry.register(SPEEDRUNNER_SWAPPER, RoleDefinition.builder()
+            .identifier(SPEEDRUNNER_SWAPPER)
+            .roleType(SPEEDRUNNER)
+            .name("Swapper Speedrunner")
+            .description("Tu gagnes quand le dragon meurt mais tu perds si tu meurs avant ! " +
+                        "Tu peux échanger de position avec le dernier joueur ciblé")
+            .withAbility(ctx -> new UIPickerCompassAbility(ctx, Duration.ofMinutes(15)))
+            .withAbility(ctx -> new DragonWinConditionAbility(ctx))
+            .withAbility(ctx -> new PortalTrackingAbility(ctx))
+            .withAbility(ctx -> new SpeedrunnerDeathAbility(ctx))
+            .withAbility(ctx -> new SwapperAbility(ctx))
+            .build());
+    }
+
+    private void registerHunterVariants(RoleDefinitionRegistry registry) {
+        // HUNTER_SIMPLE
+        registry.register(HUNTER_SIMPLE, RoleDefinition.builder()
+            .identifier(HUNTER_SIMPLE)
+            .roleType(HUNTER)
+            .name("Hunter")
+            .description("Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
+                        "te donne sa position.")
+            .withAbility(ctx -> new CyclingCompassAbility(ctx, Duration.ofSeconds(30)))
+            .withAbility(ctx -> new CompassOnStartAbility(ctx))
+            .withAbility(ctx -> new CompassOnRespawnAbility(ctx))
+            .build());
+
+        // HUNTER_CHECKPOINT
+        CheckpointStorage hunterCheckpointStorage = new CheckpointStorage();
+        ItemStack hunterCheckpointItem = createCheckpointItem();
+        ItemStack hunterRollbackItem = createRollbackItem();
+
+        registry.register(HUNTER_CHECKPOINT, RoleDefinition.builder()
+            .identifier(HUNTER_CHECKPOINT)
+            .roleType(HUNTER)
+            .name("Checkpoint Hunter")
+            .description("Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
+                        "te donne sa position. Tu peux poser des checkpoints.")
+            .withAbility(ctx -> new CyclingCompassAbility(ctx, Duration.ofSeconds(30)))
+            .withAbility(ctx -> new CompassOnStartAbility(ctx))
+            .withAbility(ctx -> new CompassOnRespawnAbility(ctx))
+            .withAbility(ctx -> new CheckpointSaveAbility(ctx, hunterCheckpointItem, Duration.ofSeconds(15), hunterCheckpointStorage))
+            .withAbility(ctx -> new CheckpointRollbackAbility(ctx, hunterRollbackItem, Duration.ofSeconds(15), hunterCheckpointStorage))
+            .build());
+
+        // HUNTER_PRO_MINER
+        registry.register(HUNTER_PRO_MINER, RoleDefinition.builder()
+            .identifier(HUNTER_PRO_MINER)
+            .roleType(HUNTER)
+            .name("Pro Miner Hunter")
+            .description("Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
+                        "te donne sa position. Parfois en minant de la roche, de la " +
+                        "deepslate ou de la netherack, tu obtiens du minerai.")
+            .withAbility(ctx -> new CyclingCompassAbility(ctx, Duration.ofSeconds(30)))
+            .withAbility(ctx -> new CompassOnStartAbility(ctx))
+            .withAbility(ctx -> new CompassOnRespawnAbility(ctx))
+            .withAbility(ctx -> new ProMinerAbility(ctx))
+            .build());
+
+        // HUNTER_SUPER
+        registry.register(HUNTER_SUPER, RoleDefinition.builder()
+            .identifier(HUNTER_SUPER)
+            .roleType(HUNTER)
+            .name("Super Hunter")
+            .description("Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
+                        "te donne sa position. Conditions de victoire modifiées.")
+            .withAbility(ctx -> new CyclingCompassAbility(ctx, Duration.ofSeconds(30)))
+            .withAbility(ctx -> new CompassOnStartAbility(ctx))
+            .withAbility(ctx -> new CompassOnRespawnAbility(ctx))
+            .withAbility(ctx -> new SuperHunterWinModifierAbility(ctx))
+            .build());
+
+        // HUNTER_ELF
+        registry.register(HUNTER_ELF, RoleDefinition.builder()
+            .identifier(HUNTER_ELF)
+            .roleType(HUNTER)
+            .name("Elf Hunter")
+            .description("Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
+                        "te donne sa position. Tu obtiens Speed 1 et Jump Boost 2 en permanence")
+            .withAbility(ctx -> new CyclingCompassAbility(ctx, Duration.ofSeconds(30)))
+            .withAbility(ctx -> new CompassOnStartAbility(ctx))
+            .withAbility(ctx -> new CompassOnRespawnAbility(ctx))
+            .withAbility(ctx -> new ElfBonusEffectAbility(ctx))
+            .build());
+
+        // HUNTER_LINK
+        registry.register(HUNTER_LINK, RoleDefinition.builder()
+            .identifier(HUNTER_LINK)
+            .roleType(HUNTER)
+            .name("Link Hunter")
+            .description("Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
+                        "te donne sa position. Casser des herbes te drop parfois des émeraudes.")
+            .withAbility(ctx -> new CyclingCompassAbility(ctx, Duration.ofSeconds(30)))
+            .withAbility(ctx -> new CompassOnStartAbility(ctx))
+            .withAbility(ctx -> new CompassOnRespawnAbility(ctx))
+            .withAbility(ctx -> new GrassDropAbility(ctx))
+            .withAbility(ctx -> new SwordSoundAbility(ctx, Sound.ENTITY_VILLAGER_AMBIENT))
+            .build());
+
+        // HUNTER_CUTCLEAN
+        registry.register(HUNTER_CUTCLEAN, RoleDefinition.builder()
+            .identifier(HUNTER_CUTCLEAN)
+            .roleType(HUNTER)
+            .name("CutClean Hunter")
+            .description("Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
+                        "te donne sa position. Les minerais et la nourriture sont automatiquement cuits")
+            .withAbility(ctx -> new CyclingCompassAbility(ctx, Duration.ofSeconds(30)))
+            .withAbility(ctx -> new CompassOnStartAbility(ctx))
+            .withAbility(ctx -> new CompassOnRespawnAbility(ctx))
+            .withAbility(ctx -> new CutCleanAbility(ctx))
+            .build());
+
+        // HUNTER_GLUER
+        registry.register(HUNTER_GLUER, RoleDefinition.builder()
+            .identifier(HUNTER_GLUER)
+            .roleType(HUNTER)
+            .name("Gluer Hunter")
+            .description("Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
+                        "te donne sa position. Applique Slowness 2 aux speedrunners proches")
+            .withAbility(ctx -> new CyclingCompassAbility(ctx, Duration.ofSeconds(30)))
+            .withAbility(ctx -> new CompassOnStartAbility(ctx))
+            .withAbility(ctx -> new CompassOnRespawnAbility(ctx))
+            .withAbility(ctx -> new GluerSlownessAbility(ctx))
+            .build());
+
+        // HUNTER_IMPOSTER
+        registry.register(HUNTER_IMPOSTER, RoleDefinition.builder()
+            .identifier(HUNTER_IMPOSTER)
+            .roleType(HUNTER)
+            .name("Imposter Hunter")
+            .description("Gagne quand le speedrunner meurt. Tu détiens une boussole qui " +
+                        "te donne sa position. Tu apparais comme un speedrunner aux autres joueurs")
+            .withAbility(ctx -> new CyclingCompassAbility(ctx, Duration.ofSeconds(30)))
+            .withAbility(ctx -> new CompassOnStartAbility(ctx))
+            .withAbility(ctx -> new CompassOnRespawnAbility(ctx))
+            .withAbility(ctx -> new ImposterDeceptionAbility(ctx))
+            .build());
+    }
+
+    private void registerAllyVariants(RoleDefinitionRegistry registry) {
+        // ALLY_UNDECIDED
+        registry.register(ALLY_UNDECIDED, RoleDefinition.builder()
+            .identifier(ALLY_UNDECIDED)
+            .roleType(ALLY)
+            .name("Undecided")
+            .description("Ton rôle sera révélé plus tard...")
+            .withAbility(ctx -> new UndecidedRoleAbility(ctx))
+            .build());
+    }
+
+    // Helper methods for item creation
+    private ItemStack createCheckpointItem() {
+        return new ItemStack(Material.RECOVERY_COMPASS);
+    }
+
+    private ItemStack createRollbackItem() {
+        return new ItemStack(Material.ECHO_SHARD);
     }
 }

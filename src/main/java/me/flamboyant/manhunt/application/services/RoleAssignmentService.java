@@ -8,7 +8,9 @@ import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
 import me.flamboyant.manhunt.domain.event.RolesAssignedEvent;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
-import me.flamboyant.manhunt.domain.role.definition.RoleRegistry;
+import me.flamboyant.manhunt.domain.role.definition.AssistedRoleFactory;
+import me.flamboyant.manhunt.domain.role.definition.RoleDefinition;
+import me.flamboyant.manhunt.domain.role.definition.RoleDefinitionRegistry;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import org.bukkit.entity.Player;
 
@@ -17,15 +19,20 @@ import java.util.Map;
 @Singleton
 public class RoleAssignmentService {
     private final GameSessionManager sessionManager;
-    private final RoleRegistry roleRegistry;
+    private final AssistedRoleFactory roleFactory;
+    private final RoleDefinitionRegistry roleDefinitionRegistry;
     private final DomainEventPublisher eventPublisher;
 
     @Inject
-    public RoleAssignmentService(GameSessionManager sessionManager,
-                                  RoleRegistry roleRegistry,
-                                  DomainEventPublisher eventPublisher) {
+    public RoleAssignmentService(
+        GameSessionManager sessionManager,
+        AssistedRoleFactory roleFactory,
+        RoleDefinitionRegistry roleDefinitionRegistry,
+        DomainEventPublisher eventPublisher
+    ) {
         this.sessionManager = sessionManager;
-        this.roleRegistry = roleRegistry;
+        this.roleFactory = roleFactory;
+        this.roleDefinitionRegistry = roleDefinitionRegistry;
         this.eventPublisher = eventPublisher;
     }
 
@@ -45,8 +52,17 @@ public class RoleAssignmentService {
 
         for (Map.Entry<Player, ManhuntRoleIdentifier> entry :
              command.getRoleAssignments().entrySet()) {
-            AManhuntRole role = roleRegistry.createRole(entry.getValue(), entry.getKey());
-            session.assignRole(entry.getKey(), role);
+            Player player = entry.getKey();
+            ManhuntRoleIdentifier roleId = entry.getValue();
+
+            // Get role definition from registry
+            RoleDefinition definition = roleDefinitionRegistry.getDefinition(roleId);
+
+            // Create role using factory
+            AManhuntRole role = roleFactory.create(player, definition);
+
+            // Register role with session
+            session.assignRole(player, role);
         }
 
         eventPublisher.publish(new RolesAssignedEvent(command.getSessionId()));

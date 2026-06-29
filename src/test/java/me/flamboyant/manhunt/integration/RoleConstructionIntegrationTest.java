@@ -5,7 +5,8 @@ import com.google.inject.Injector;
 import me.flamboyant.manhunt.application.injection.ManhuntModule;
 import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
-import me.flamboyant.manhunt.domain.role.definition.RoleRegistry;
+import me.flamboyant.manhunt.domain.role.definition.RoleDefinitionRegistry;
+import me.flamboyant.manhunt.domain.role.factory.AssistedRoleFactory;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.*;
  */
 public class RoleConstructionIntegrationTest {
     private Injector injector;
-    private RoleRegistry registry;
+    private AssistedRoleFactory registry;
     private Player mockPlayer;
 
     @Before
@@ -34,8 +35,8 @@ public class RoleConstructionIntegrationTest {
         // Create real Guice injector with ManhuntModule
         injector = Guice.createInjector(new ManhuntModule(mockPlugin));
 
-        // Get RoleRegistry from injector
-        registry = injector.getInstance(RoleRegistry.class);
+        // Get AssistedRoleFactory from injector
+        registry = injector.getInstance(AssistedRoleFactory.class);
 
         // Create mock player for role construction
         mockPlayer = mock(Player.class);

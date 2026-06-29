@@ -3,8 +3,7 @@ package me.flamboyant.manhunt;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.game.GamePhase;
 import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
-import me.flamboyant.manhunt.domain.role.behavior.SpeedrunnerRole;
-import me.flamboyant.manhunt.domain.role.behavior.DamageOutcome;
+// Old SpeedrunnerRole class removed - using composition-based Role now
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 import me.flamboyant.manhunt.domain.wincondition.*;
 import me.flamboyant.manhunt.domain.event.*;
@@ -174,30 +173,8 @@ public class NewManhuntManager implements Listener {
         NewManhuntLauncher.getInstance().stop();
     }
 
-    @EventHandler
-    public void onEntityDamage(EntityDamageEvent event)
-    {
-        if (event.getEntityType() != EntityType.PLAYER) return;
-
-        Player player = (Player) event.getEntity();
-
-        // Check if player is in this session
-        if (!session.hasRole(player)) return;
-
-        AManhuntRole role = session.getRole(player);
-
-        // Only process speedrunner damage
-        if (!(role instanceof SpeedrunnerRole)) return;
-
-        // Check if damage is fatal
-        SpeedrunnerRole speedrunner = (SpeedrunnerRole) role;
-        DamageOutcome outcome = speedrunner.handleDamage(event.getFinalDamage());
-
-        if (outcome.isDied()) {
-            // Publish domain event (win condition checked by handler)
-            session.notifySpeedrunnerDied(player);
-        }
-    }
+    // Note: Damage handling now delegated to SpeedrunnerDeathAbility
+    // No need for manual damage processing here
 
 
     /**
