@@ -1,6 +1,8 @@
 package me.flamboyant.manhunt;
 
+import com.google.inject.Inject;
 import me.flamboyant.gui.ConfigurablePluginListener;
+import me.flamboyant.manhunt.infrastructure.adapters.ManhuntPluginAdapter;
 import me.flamboyant.utils.ILaunchablePlugin;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -8,22 +10,24 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Singleton;
+
+@Singleton
 public class CommandsDispatcher implements CommandExecutor {
+    private final ManhuntPluginAdapter adapter;
+
+    @Inject
+    public CommandsDispatcher(ManhuntPluginAdapter adapter) {
+        this.adapter = adapter;
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String msg, String[] args) {
-        if(sender instanceof Player)
-        {
+        if (sender instanceof Player) {
             Player commandSender = (Player) sender;
-            ILaunchablePlugin pluginToLaunch = null;
-            switch (cmd.getName())
-            {
-                case "f_manhunt":
-                    pluginToLaunch = NewManhuntLauncher.getInstance();
-                    break;
-                default :
-                    break;
+            if ("f_manhunt".equals(cmd.getName())) {
+                launchPlugin(commandSender, adapter);
             }
-            if (pluginToLaunch != null) launchPlugin(commandSender, pluginToLaunch);
             return true;
         }
         return false;
@@ -38,8 +42,9 @@ public class CommandsDispatcher implements CommandExecutor {
 
         plugin.resetParameters();
 
-        if (!ConfigurablePluginListener.getInstance().isLaunched())
+        if (!ConfigurablePluginListener.getInstance().isLaunched()) {
             ConfigurablePluginListener.getInstance().launch(plugin, sender);
+        }
 
         sender.sendMessage("Plugin started");
     }
