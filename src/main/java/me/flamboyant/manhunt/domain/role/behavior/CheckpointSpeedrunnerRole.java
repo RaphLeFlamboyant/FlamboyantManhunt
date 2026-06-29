@@ -1,14 +1,20 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
-import me.flamboyant.utils.ItemHelper;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.ArrayList;
@@ -26,8 +32,16 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
     private ArrayList<ItemStack> savedInventory = new ArrayList<>();
     private HashSet<PotionEffect> savedEffects = new HashSet<>();
 
-    public CheckpointSpeedrunnerRole(Player owner) {
-        super(owner);
+    @Inject
+    public CheckpointSpeedrunnerRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override
@@ -74,11 +88,11 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
 
         Material itemUsed;
         Runnable methodToExecute;
-        if (ItemHelper.isSameItemKind(event.getItem(), getCheckpointItem())) {
+        if (itemService.isSameItemKind(event.getItem(), getCheckpointItem())) {
             itemUsed = getCheckpointItem().getType();
             methodToExecute = this::doCheckpoint;
         }
-        else if (ItemHelper.isSameItemKind(event.getItem(), getRollbackItem())) {
+        else if (itemService.isSameItemKind(event.getItem(), getRollbackItem())) {
             itemUsed = getRollbackItem().getType();
             methodToExecute = this::doRollBack;
         }
@@ -127,10 +141,10 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     private ItemStack getRollbackItem() {
-        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Rollback", Arrays.asList("Te fait revenir au checkpoint"), true, Enchantment.ARROW_FIRE, true, true);
+        return itemService.generateItem(Material.RECOVERY_COMPASS, 1, "Rollback", Arrays.asList("Te fait revenir au checkpoint"), true, Enchantment.ARROW_FIRE, true, true);
     }
 
     private ItemStack getCheckpointItem() {
-        return ItemHelper.generateItem(Material.TARGET, 1, "Save State", Arrays.asList("Créer un checkpoint"), true, Enchantment.ARROW_FIRE, true, true);
+        return itemService.generateItem(Material.TARGET, 1, "Save State", Arrays.asList("Créer un checkpoint"), true, Enchantment.ARROW_FIRE, true, true);
     }
 }

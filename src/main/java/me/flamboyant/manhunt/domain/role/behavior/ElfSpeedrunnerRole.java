@@ -1,8 +1,13 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
-import me.flamboyant.utils.Common;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Arrow;
@@ -10,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
@@ -23,13 +29,21 @@ public class ElfSpeedrunnerRole extends SpeedrunnerRole {
     private static final List<Biome> regenBiomes = Arrays.asList(Biome.FOREST, Biome.BIRCH_FOREST, Biome.WARPED_FOREST, Biome.CRIMSON_FOREST, Biome.OLD_GROWTH_BIRCH_FOREST, Biome.DARK_FOREST, Biome.WINDSWEPT_FOREST, Biome.FLOWER_FOREST, Biome.LUSH_CAVES, Biome.TAIGA, Biome.OLD_GROWTH_PINE_TAIGA, Biome.OLD_GROWTH_SPRUCE_TAIGA, Biome.SNOWY_TAIGA, Biome.JUNGLE, Biome.SPARSE_JUNGLE, Biome.BAMBOO_JUNGLE, Biome.MANGROVE_SWAMP);
     private BukkitTask regenTask;
 
-    public ElfSpeedrunnerRole(Player owner) {
-        super(owner);
+    @Inject
+    public ElfSpeedrunnerRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override
     protected boolean doStart() {
-        regenTask = Bukkit.getScheduler().runTaskTimer(Common.plugin, () -> {
+        regenTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             if (regenBiomes.contains(owner.getLocation().getWorld().getBiome(owner.getLocation())))
                 owner.setHealth(owner.getHealth() + 1);
         }, 5 * 20, 5 * 20);

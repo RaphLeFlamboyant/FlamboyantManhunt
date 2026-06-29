@@ -24,4 +24,12 @@ public interface ItemService {
      * @return configured ItemStack
      */
     ItemStack createItem(Material material, String displayName, String... lore);
+
+    /**
+     * Check if two items are of the same kind (same material and display name).
+     * @param item1 first item (can be null)
+     * @param item2 second item (can be null)
+     * @return true if both items have same material and display name
+     */
+    boolean isSameItemKind(ItemStack item1, ItemStack item2);
 }

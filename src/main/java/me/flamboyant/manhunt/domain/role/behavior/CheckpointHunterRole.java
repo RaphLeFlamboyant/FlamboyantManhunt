@@ -1,15 +1,18 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import me.flamboyant.manhunt.application.GameSessionManager;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
-import me.flamboyant.utils.ChatHelper;
-import me.flamboyant.utils.Common;
-import me.flamboyant.utils.ItemHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,14 +20,23 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Random;
 
 public class CheckpointHunterRole extends AManhuntRole implements Listener {
     private static final int cooldown = 15;
+
+    private final Server server;
+    private final Plugin plugin;
+    private final MessageService messageService;
+    private final ItemService itemService;
+    private final EventRegistrationService eventRegistration;
+    private final Random rng = new Random();
 
     private BukkitTask nextCheckpointTask;
     private Location savedLocation;
@@ -34,8 +46,21 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     private int savedFireTicks = 0;
     private HashSet<PotionEffect> savedEffects = new HashSet<>();
 
-    public CheckpointHunterRole(Player owner) {
+    @Inject
+    public CheckpointHunterRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
         super(owner);
+        this.server = server;
+        this.plugin = plugin;
+        this.messageService = messageService;
+        this.itemService = itemService;
+        this.eventRegistration = eventRegistration;
     }
 
     @Override
@@ -66,7 +91,7 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
         owner.getInventory().addItem(getRollbackItem());
         // Manual registration removed - handled by StartGameSaga
 
-        nextCheckpointTask = Bukkit.getScheduler().runTaskLater(Common.plugin, () -> doCheckpoint(), 1);
+        nextCheckpointTask = Bukkit.getScheduler().runTaskLater(plugin, () -> doCheckpoint(), 1);
         return true;
     }
 
@@ -74,7 +99,7 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     protected void broadcastPlayerResultMessage() {
         GameSession session = GameSessionManager.getInstance().getActiveSessionForPlayer(owner);
         boolean won = session != null && session.getRemainingSpeedrunners() == 0;
-        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (won ? "gagné" : "perdu") + " !"));
+        Bukkit.broadcastMessage(messageService.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (won ? "gagné" : "perdu") + " !"));
     }
 
     @Override
@@ -92,7 +117,7 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
         if (savedLocation == null) return;
         if (event.getPlayer() != owner) return;
         ItemStack modelItem = getRollbackItem();
-        if (!event.hasItem() || !ItemHelper.isSameItemKind(event.getItem(), modelItem)) return;
+        if (!event.hasItem() || !itemService.isSameItemKind(event.getItem(), modelItem)) return;
         event.setCancelled(true);
         if (owner.hasCooldown(modelItem.getType())) return;
 
@@ -120,7 +145,7 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     }
 
     private void scheduleNextCheckpoint() {
-        nextCheckpointTask = Bukkit.getScheduler().runTaskLater(Common.plugin, () -> doCheckpoint(), (1 + (Common.rng.nextInt(cooldown) * 60 * 20)));
+        nextCheckpointTask = Bukkit.getScheduler().runTaskLater(plugin, () -> doCheckpoint(), (1 + (rng.nextInt(cooldown) * 60 * 20)));
     }
 
     private void doCheckpoint() {
@@ -138,6 +163,6 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     }
 
     private ItemStack getRollbackItem() {
-        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Rollback", Arrays.asList("Te fait revenir au checkpoint"), true, Enchantment.ARROW_FIRE, true, true);
+        return itemService.generateItem(Material.RECOVERY_COMPASS, 1, "Rollback", Arrays.asList("Te fait revenir au checkpoint"), true, Enchantment.ARROW_FIRE, true, true);
     }
 }

@@ -1,6 +1,12 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
@@ -9,12 +15,22 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
 public class ElfHunterRole extends HunterRole {
     private static final int degres = 3;
-    public ElfHunterRole(Player owner) {
-        super(owner);
+
+    @Inject
+    public ElfHunterRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override

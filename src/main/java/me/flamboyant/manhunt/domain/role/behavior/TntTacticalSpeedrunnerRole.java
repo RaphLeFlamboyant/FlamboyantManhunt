@@ -1,9 +1,13 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
-import me.flamboyant.utils.ChatHelper;
-import me.flamboyant.utils.ItemHelper;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,6 +15,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 
@@ -19,8 +24,16 @@ import java.util.Arrays;
 public class TntTacticalSpeedrunnerRole extends SpeedrunnerRole {
     private Location lastBlockLocation;
 
-    public TntTacticalSpeedrunnerRole(Player owner) {
-        super(owner);
+    @Inject
+    public TntTacticalSpeedrunnerRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override
@@ -57,15 +70,15 @@ public class TntTacticalSpeedrunnerRole extends SpeedrunnerRole {
         super.onPlayerInteract(event);
         if (event.getPlayer() != owner) return;
         if (owner.hasCooldown(Material.RECOVERY_COMPASS)) return;
-        if (!ItemHelper.isExactlySameItemKind(event.getItem(), getTntActivationItem())) return;
+        if (!itemService.isExactlySameItemKind(event.getItem(), getTntActivationItem())) return;
         event.setCancelled(true);
 
         if (lastBlockLocation == null) {
-            owner.sendMessage(ChatHelper.feedback("Le dernier bloc posé a été cassé."));
+            owner.sendMessage(messageService.feedback("Le dernier bloc posé a été cassé."));
             return;
         }
         if (!lastBlockLocation.getChunk().isLoaded()) {
-            owner.sendMessage(ChatHelper.feedback("Le dernier bloc posé n'est pas dans une zone chargée !"));
+            owner.sendMessage(messageService.feedback("Le dernier bloc posé n'est pas dans une zone chargée !"));
             return;
         }
 
@@ -88,6 +101,6 @@ public class TntTacticalSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     private ItemStack getTntActivationItem() {
-        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Activation TNT", Arrays.asList("Fait exploser le dernier bloc placé"), true, Enchantment.ARROW_FIRE, true, true);
+        return itemService.generateItem(Material.RECOVERY_COMPASS, 1, "Activation TNT", Arrays.asList("Fait exploser le dernier bloc placé"), true, Enchantment.ARROW_FIRE, true, true);
     }
 }

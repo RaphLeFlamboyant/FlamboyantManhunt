@@ -1,12 +1,17 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
-import me.flamboyant.utils.ChatHelper;
-import me.flamboyant.utils.Common;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
@@ -21,8 +26,16 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
     private BukkitTask task;
     private boolean powerActivated = false;
 
-    public WerewolfSpeedrunnerRole(Player owner) {
-        super(owner);
+    @Inject
+    public WerewolfSpeedrunnerRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override
@@ -54,7 +67,7 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
         ItemStack item = new ItemStack(Material.COMPASS);
         owner.getInventory().addItem(item);
 
-        task = Bukkit.getScheduler().runTaskTimer(Common.plugin, () -> {
+        task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             World world = owner.getLocation().getWorld();
             long time = world.getTime();
             if (world.getName().toLowerCase().contains("end")
@@ -84,12 +97,12 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
 
         powerActivated = isActive;
         if (!isActive) {
-            owner.sendMessage(ChatHelper.feedback("Vous n'avez plus vos pouvoirs pour le moment. Votre boussole redevient normale."));
+            owner.sendMessage(messageService.feedback("Vous n'avez plus vos pouvoirs pour le moment. Votre boussole redevient normale."));
             owner.setCompassTarget(owner.getBedSpawnLocation());
         }
         else {
             owner.setCooldown(Material.COMPASS, 0);
-            owner.sendMessage(ChatHelper.feedback("Vous obtenez enfin vos pouvoirs"));
+            owner.sendMessage(messageService.feedback("Vous obtenez enfin vos pouvoirs"));
         }
     }
 }

@@ -1,20 +1,34 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
-import me.flamboyant.utils.ChatHelper;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.plugin.Plugin;
 
 public class ImposterRole extends HunterRole {
     private static boolean winconMet;
 
-    public ImposterRole(Player owner) {
-        super(owner);
+    @Inject
+    public ImposterRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override
@@ -30,7 +44,7 @@ public class ImposterRole extends HunterRole {
     }
     @Override
     protected void broadcastPlayerResultMessage() {
-        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (winconMet ? "gagné" : "perdu") + " !"));
+        Bukkit.broadcastMessage(messageService.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (winconMet ? "gagné" : "perdu") + " !"));
     }
 
     @Override

@@ -51,7 +51,6 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        <sourceDirectory>./</sourceDirectory>
     </build>
 
     <repositories>
@@ -88,6 +87,12 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+        <!-- Google Guice AssistedInject extension -->
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-assistedinject</artifactId>
             <version>5.1.0</version>
         </dependency>
     </dependencies>

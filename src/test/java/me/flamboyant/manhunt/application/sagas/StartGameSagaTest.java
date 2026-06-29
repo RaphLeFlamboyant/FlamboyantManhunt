@@ -9,6 +9,7 @@ import me.flamboyant.manhunt.application.exceptions.CompensationStatus;
 import me.flamboyant.manhunt.application.exceptions.GameStartException;
 import me.flamboyant.manhunt.application.services.EventHandlerRegistrationService;
 import me.flamboyant.manhunt.application.services.GameLifecycleService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.application.services.RoleAssignmentService;
 import me.flamboyant.manhunt.application.services.RoleDistributionService;
 import me.flamboyant.manhunt.domain.event.DomainEventHandler;
@@ -50,6 +51,7 @@ public class StartGameSagaTest {
     private RoleDistributionService mockDistribution;
     private RoleAssignmentService mockAssignment;
     private EventHandlerRegistrationService mockHandlers;
+    private MessageService mockMessageService;
     private GameSessionManager mockSessionManager;
     private TestEventPublisher testPublisher;
     private StartGameSaga saga;
@@ -63,13 +65,14 @@ public class StartGameSagaTest {
         mockDistribution = mock(RoleDistributionService.class);
         mockAssignment = mock(RoleAssignmentService.class);
         mockHandlers = mock(EventHandlerRegistrationService.class);
+        mockMessageService = mock(MessageService.class);
         mockSessionManager = mock(GameSessionManager.class);
 
         // Use test event publisher for integration tests
         testPublisher = new TestEventPublisher();
 
         saga = new StartGameSaga(mockLifecycle, mockDistribution, mockAssignment,
-                                 mockHandlers, mockSessionManager, testPublisher);
+                                 mockHandlers, mockMessageService, mockSessionManager, testPublisher);
 
         // Register saga event handlers
         testPublisher.subscribe(GameSessionCreatedEvent.class, saga::onSessionCreated);

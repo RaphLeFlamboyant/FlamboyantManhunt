@@ -1,21 +1,34 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import me.flamboyant.manhunt.application.GameSessionManager;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
-import me.flamboyant.utils.ChatHelper;
-import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 public class UndecidedRole extends HunterRole {
     private BukkitTask changeTeamTask;
     private ManhuntRoleType currentTeam = ManhuntRoleType.ALLY;
 
-    public UndecidedRole(Player owner) {
-        super(owner);
+    @Inject
+    public UndecidedRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override
@@ -26,9 +39,9 @@ public class UndecidedRole extends HunterRole {
 
     @Override
     protected boolean doStart() {
-        changeTeamTask = Bukkit.getScheduler().runTaskTimer(Common.plugin, () -> {
+        changeTeamTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             currentTeam = currentTeam == ManhuntRoleType.ALLY ? ManhuntRoleType.HUNTER : ManhuntRoleType.ALLY;
-            owner.sendMessage(ChatHelper.importantMessage("Tu es passé dans le camp " + (currentTeam == ManhuntRoleType.ALLY ? "allié du speedrunner" : "hunter")));
+            owner.sendMessage(messageService.importantMessage("Tu es passé dans le camp " + (currentTeam == ManhuntRoleType.ALLY ? "allié du speedrunner" : "hunter")));
         }, 15 * 60 * 20, 15 * 60 * 20);
         return super.doStart();
     }
@@ -40,7 +53,7 @@ public class UndecidedRole extends HunterRole {
         } else {
             GameSession session = GameSessionManager.getInstance().getActiveSessionForPlayer(owner);
             boolean won = session != null && session.getRemainingSpeedrunners() > 0;
-            Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (won ? "gagné" : "perdu") + " !"));
+            Bukkit.broadcastMessage(messageService.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (won ? "gagné" : "perdu") + " !"));
         }
     }
 

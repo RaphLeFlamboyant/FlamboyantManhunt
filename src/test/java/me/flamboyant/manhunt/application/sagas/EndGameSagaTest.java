@@ -2,6 +2,7 @@ package me.flamboyant.manhunt.application.sagas;
 
 import me.flamboyant.manhunt.application.commands.EndGameCommand;
 import me.flamboyant.manhunt.application.services.GameLifecycleService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.game.GameSessionId;
 import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
@@ -22,11 +23,13 @@ class EndGameSagaTest {
 
     private EndGameSaga saga;
     private GameLifecycleService lifecycleService;
+    private MessageService messageService;
 
     @BeforeEach
     void setUp() {
         lifecycleService = mock(GameLifecycleService.class);
-        saga = new EndGameSaga(lifecycleService);
+        messageService = mock(MessageService.class);
+        saga = new EndGameSaga(lifecycleService, messageService);
     }
 
     @Test

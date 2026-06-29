@@ -1,18 +1,24 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import me.flamboyant.manhunt.application.GameSessionManager;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.wincondition.AllSpeedrunnersDeadCondition;
 import me.flamboyant.manhunt.domain.wincondition.WinCondition;
 import me.flamboyant.manhunt.domain.wincondition.WinConditionModifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
-import me.flamboyant.utils.ChatHelper;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.plugin.Plugin;
 
 import java.util.Optional;
 
@@ -20,14 +26,22 @@ public class SuperHunterRole extends HunterRole implements WinConditionModifier 
     private static final int REQUIRED_KILL_COUNT = 3;
     private int speedRunnerKillCount = 0;
 
-    public SuperHunterRole(Player owner) {
-        super(owner);
+    @Inject
+    public SuperHunterRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override
     protected void broadcastPlayerResultMessage() {
         boolean wincon = isWinning();
-        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (wincon ? "gagné" : "perdu") + " !"));
+        Bukkit.broadcastMessage(messageService.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (wincon ? "gagné" : "perdu") + " !"));
     }
 
     @Override
@@ -81,13 +95,13 @@ public class SuperHunterRole extends HunterRole implements WinConditionModifier 
         if (victimRole.getRoleType() == ManhuntRoleType.SPEEDRUNNER) {
             if (victim.getHealth() - event.getFinalDamage() <= 0) {
                 speedRunnerKillCount++;
-                Bukkit.broadcastMessage(ChatHelper.feedback(
+                Bukkit.broadcastMessage(messageService.feedback(
                     owner.getDisplayName() + " (SuperHunter) a tué un speedrunner ! ("
                     + speedRunnerKillCount + "/" + REQUIRED_KILL_COUNT + ")"
                 ));
 
                 if (speedRunnerKillCount >= REQUIRED_KILL_COUNT) {
-                    Bukkit.broadcastMessage(ChatHelper.feedback(
+                    Bukkit.broadcastMessage(messageService.feedback(
                         "SuperHunter peut maintenant permettre la victoire des Hunters !"
                     ));
                 }

@@ -1,20 +1,24 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import me.flamboyant.manhunt.application.GameSessionManager;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.infrastructure.ui.PlayerSelectionView;
-import me.flamboyant.utils.ChatHelper;
-import me.flamboyant.utils.Common;
-import me.flamboyant.utils.ItemHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 
@@ -24,8 +28,16 @@ import java.util.stream.Collectors;
 public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
     private PlayerSelectionView roleView;
 
-    public SpeedrunnerSwapperRole(Player owner) {
-        super(owner);
+    @Inject
+    public SpeedrunnerSwapperRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override
@@ -69,10 +81,10 @@ public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
     public void onPlayerInteract(PlayerInteractEvent event) {
         super.onPlayerInteract(event);
         if (event.getPlayer() != owner) return;
-        if (!ItemHelper.isExactlySameItemKind(event.getItem(), getTargetSelectionItem())) return;
+        if (!itemService.isExactlySameItemKind(event.getItem(), getTargetSelectionItem())) return;
         event.setCancelled(true);
 
-        Common.server.getPluginManager().registerEvents(roleView, Common.plugin);
+        server.getPluginManager().registerEvents(roleView, plugin);
         owner.openInventory(roleView.getView());
     }
 
@@ -84,7 +96,7 @@ public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
         if (event.getInventory() != roleView.getView()) return;
         if (owner.getCooldown(Material.RECOVERY_COMPASS) > 0) return;
 
-        Bukkit.getScheduler().runTaskLater(Common.plugin, () -> doCountDown(6), 1 * 20);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> doCountDown(6), 1 * 20);
 
         owner.setCooldown(Material.RECOVERY_COMPASS, 5 * 60 * 20);
     }
@@ -92,8 +104,8 @@ public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
     private void doCountDown(int seconds) {
         int next = seconds - 1;
         if (next > 0) {
-            owner.sendMessage(ChatHelper.feedback(next + " secondes avant swap !"));
-            Bukkit.getScheduler().runTaskLater(Common.plugin, () -> doCountDown(next), 1 * 20);
+            owner.sendMessage(messageService.feedback(next + " secondes avant swap !"));
+            Bukkit.getScheduler().runTaskLater(plugin, () -> doCountDown(next), 1 * 20);
         }
         else {
             Player target = roleView.getSelectedPlayer();
@@ -105,6 +117,6 @@ public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
     }
 
     private ItemStack getTargetSelectionItem() {
-        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Choisir le joueur", Arrays.asList("Change ta place avec un joueur"), true, Enchantment.ARROW_FIRE, true, true);
+        return itemService.generateItem(Material.RECOVERY_COMPASS, 1, "Choisir le joueur", Arrays.asList("Change ta place avec un joueur"), true, Enchantment.ARROW_FIRE, true, true);
     }
 }

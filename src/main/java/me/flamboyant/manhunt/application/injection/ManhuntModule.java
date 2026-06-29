@@ -1,12 +1,15 @@
 package me.flamboyant.manhunt.application.injection;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
 import me.flamboyant.manhunt.NewManhuntManager;
-import me.flamboyant.manhunt.NewManhuntLauncher;
 import me.flamboyant.manhunt.application.GameSessionManager;
+import me.flamboyant.manhunt.infrastructure.adapters.ManhuntPluginAdapter;
 import me.flamboyant.manhunt.application.sagas.EndGameSaga;
 import me.flamboyant.manhunt.application.sagas.StartGameSaga;
 import me.flamboyant.manhunt.application.services.EventHandlerRegistrationService;
@@ -18,6 +21,8 @@ import me.flamboyant.manhunt.application.services.ItemService;
 import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
 import me.flamboyant.manhunt.domain.event.InMemoryEventPublisher;
+import me.flamboyant.manhunt.domain.role.definition.AssistedRoleFactory;
+import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.RoleRegistry;
 import me.flamboyant.manhunt.domain.role.behavior.*;
 import me.flamboyant.manhunt.domain.role.distribution.*;
@@ -28,14 +33,12 @@ import me.flamboyant.manhunt.domain.wincondition.WinConditionEvaluator;
 import me.flamboyant.manhunt.infrastructure.services.BukkitEventRegistrationService;
 import me.flamboyant.manhunt.infrastructure.services.BukkitItemService;
 import me.flamboyant.manhunt.infrastructure.services.BukkitMessageService;
-import me.flamboyant.utils.Common;
+import me.flamboyant.manhunt.application.services.GameLaunchService;
 import org.bukkit.Server;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 import java.util.Random;
-
-import static me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier.*;
 
 /**
  * Guice dependency injection module for Manhunt plugin.
@@ -58,6 +61,7 @@ public class ManhuntModule extends AbstractModule {
         bind(RoleDistributionService.class);
         bind(RoleAssignmentService.class);
         bind(EventHandlerRegistrationService.class);
+        bind(GameLaunchService.class).in(Singleton.class);
 
         // Sagas
         bind(StartGameSaga.class);
@@ -68,7 +72,10 @@ public class ManhuntModule extends AbstractModule {
 
         // Infrastructure (transition from singleton)
         bind(GameSessionManager.class).toProvider(GameSessionManagerProvider.class);
-        bind(NewManhuntLauncher.class);
+
+        // Infrastructure adapter
+        bind(ManhuntPluginAdapter.class).in(Singleton.class);
+        bind(ILaunchablePlugin.class).to(ManhuntPluginAdapter.class);
 
         // Event publisher
         bind(DomainEventPublisher.class).toProvider(EventPublisherProvider.class).in(Singleton.class);
@@ -81,6 +88,91 @@ public class ManhuntModule extends AbstractModule {
         bind(MessageService.class).to(BukkitMessageService.class).in(Singleton.class);
         bind(ItemService.class).to(BukkitItemService.class).in(Singleton.class);
         bind(EventRegistrationService.class).to(BukkitEventRegistrationService.class).in(Singleton.class);
+
+        // AssistedInject factories for all roles
+        installRoleFactories();
+    }
+
+    /**
+     * Install AssistedInject factories for all role types.
+     * Each role gets a named factory that Guice implements automatically.
+     * Named bindings match ManhuntRoleIdentifier enum values.
+     */
+    private void installRoleFactories() {
+        // Speedrunner roles (8 variants)
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_SIMPLE"), SpeedrunnerRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_SWAPPER"), SpeedrunnerSwapperRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_CHECKPOINT"), CheckpointSpeedrunnerRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_TNT_TACTICAL"), TntTacticalSpeedrunnerRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_WEREWOLF"), WerewolfSpeedrunnerRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_ELF"), ElfSpeedrunnerRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_LINK"), LinkSpeedrunnerRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("SPEEDRUNNER_CUTCLEAN"), CutCleanSpeedrunnerRole.class)
+            .build(AssistedRoleFactory.class));
+
+        // Hunter roles (7 variants)
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("HUNTER_SIMPLE"), HunterRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("HUNTER_CHECKPOINT"), CheckpointHunterRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("HUNTER_PRO_MINER"), ProMinerRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("SUPER_HUNTER"), SuperHunterRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("HUNTER_ELF"), ElfHunterRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("HUNTER_LINK"), LinkHunterRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("HUNTER_CUTCLEAN"), CutCleanHunterRole.class)
+            .build(AssistedRoleFactory.class));
+
+        // Ally and neutral roles (3 variants)
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("NEUTRAL_GLUER"), GluerRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("ALLY_IMPOSTER"), ImposterRole.class)
+            .build(AssistedRoleFactory.class));
+
+        install(new FactoryModuleBuilder()
+            .implement(AManhuntRole.class, Names.named("NEUTRAL_UNDECIDED"), UndecidedRole.class)
+            .build(AssistedRoleFactory.class));
     }
 
     @Provides
@@ -105,36 +197,24 @@ public class ManhuntModule extends AbstractModule {
 
     /**
      * Provides the RoleRegistry singleton with all role factories registered.
-     * Each role is registered using method references for type-safe construction.
+     * Uses Injector to retrieve AssistedInject factories for each role type.
      */
     @Provides
     @Singleton
-    public RoleRegistry provideRoleRegistry() {
+    public RoleRegistry provideRoleRegistry(Injector injector) {
         RoleRegistry registry = new RoleRegistry();
 
-        // Speedrunner roles
-        registry.register(SPEEDRUNNER_SIMPLE, SpeedrunnerRole::new);
-        registry.register(SPEEDRUNNER_SWAPPER, SpeedrunnerSwapperRole::new);
-        registry.register(SPEEDRUNNER_LINK, LinkSpeedrunnerRole::new);
-        registry.register(SPEEDRUNNER_CHECKPOINT, CheckpointSpeedrunnerRole::new);
-        registry.register(SPEEDRUNNER_ELF, ElfSpeedrunnerRole::new);
-        registry.register(SPEEDRUNNER_WEREWOLF, WerewolfSpeedrunnerRole::new);
-        registry.register(SPEEDRUNNER_CUTCLEAN, CutCleanSpeedrunnerRole::new);
-        registry.register(SPEEDRUNNER_TNT_TACTICAL, TntTacticalSpeedrunnerRole::new);
-
-        // Hunter roles
-        registry.register(HUNTER_SIMPLE, HunterRole::new);
-        registry.register(HUNTER_CHECKPOINT, CheckpointHunterRole::new);
-        registry.register(HUNTER_CUTCLEAN, CutCleanHunterRole::new);
-        registry.register(HUNTER_LINK, LinkHunterRole::new);
-        registry.register(HUNTER_PRO_MINER, ProMinerRole::new);
-        registry.register(HUNTER_ELF, ElfHunterRole::new);
-        registry.register(SUPER_HUNTER, SuperHunterRole::new);
-
-        // Special roles
-        registry.register(ALLY_IMPOSTER, ImposterRole::new);
-        registry.register(NEUTRAL_GLUER, GluerRole::new);
-        registry.register(NEUTRAL_UNDECIDED, UndecidedRole::new);
+        // Register all role identifiers with their AssistedInject factories
+        for (ManhuntRoleIdentifier id : ManhuntRoleIdentifier.values()) {
+            try {
+                AssistedRoleFactory<?> factory = injector.getInstance(
+                    Key.get(AssistedRoleFactory.class, Names.named(id.name())));
+                registry.register(id, factory);
+            } catch (Exception e) {
+                // Skip roles without factory bindings (if any)
+                org.bukkit.Bukkit.getLogger().warning("No factory binding for role: " + id.name());
+            }
+        }
 
         return registry;
     }

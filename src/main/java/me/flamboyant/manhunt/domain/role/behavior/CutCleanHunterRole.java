@@ -1,11 +1,18 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 
@@ -24,8 +31,16 @@ public class CutCleanHunterRole extends HunterRole {
         put(Material.RAW_COPPER_BLOCK, Material.COPPER_BLOCK);
     }};
 
-    public CutCleanHunterRole(Player owner) {
-        super(owner);
+    @Inject
+    public CutCleanHunterRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override

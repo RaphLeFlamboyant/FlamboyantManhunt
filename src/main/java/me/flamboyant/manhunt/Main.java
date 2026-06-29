@@ -28,22 +28,9 @@ public final class Main extends FlamboyantPlugin {
         // Register saga event handlers
         registerSagaEventHandlers();
 
-        // Initialize infrastructure singletons with DI instances
-        initializeInfrastructure();
-
-        CommandsDispatcher commandDispatcher = new CommandsDispatcher();
-
+        // Initialize command dispatcher with DI
+        CommandsDispatcher commandDispatcher = injector.getInstance(CommandsDispatcher.class);
         getCommand("f_manhunt").setExecutor(commandDispatcher);
-    }
-
-    /**
-     * Initializes infrastructure components with DI instances.
-     * Bridges the singleton pattern with dependency injection during migration.
-     */
-    private void initializeInfrastructure() {
-        // Get DI-managed instance and set it as the singleton
-        NewManhuntLauncher launcher = injector.getInstance(NewManhuntLauncher.class);
-        NewManhuntLauncher.setInstance(launcher);
     }
 
     /**

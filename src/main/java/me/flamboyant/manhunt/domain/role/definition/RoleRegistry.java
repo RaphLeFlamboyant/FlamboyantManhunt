@@ -11,7 +11,7 @@ import java.util.Map;
  * Maps role identifiers to factory functions for creating role instances.
  */
 public class RoleRegistry {
-    private final Map<ManhuntRoleIdentifier, RoleFactory> factories;
+    private final Map<ManhuntRoleIdentifier, AssistedRoleFactory<?>> factories;
 
     public RoleRegistry() {
         this.factories = new HashMap<>();
@@ -24,7 +24,7 @@ public class RoleRegistry {
      * @param factory The factory to create instances of this role
      * @throws IllegalStateException if role already registered
      */
-    public void register(ManhuntRoleIdentifier identifier, RoleFactory factory) {
+    public void register(ManhuntRoleIdentifier identifier, AssistedRoleFactory<?> factory) {
         if (factories.containsKey(identifier)) {
             throw new IllegalStateException("Role already registered: " + identifier);
         }
@@ -40,7 +40,7 @@ public class RoleRegistry {
      * @throws IllegalArgumentException if role not registered
      */
     public AManhuntRole createRole(ManhuntRoleIdentifier identifier, Player owner) {
-        RoleFactory factory = factories.get(identifier);
+        AssistedRoleFactory<?> factory = factories.get(identifier);
         if (factory == null) {
             throw new IllegalArgumentException("No factory registered for role: " + identifier);
         }

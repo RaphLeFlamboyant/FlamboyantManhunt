@@ -1,14 +1,18 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import me.flamboyant.manhunt.application.GameSessionManager;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
-import me.flamboyant.utils.ChatHelper;
-import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,18 +21,38 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
+import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class HunterRole extends AManhuntRole implements Listener {
+    private final Server server;
+    private final Plugin plugin;
+    private final MessageService messageService;
+    private final ItemService itemService;
+    private final EventRegistrationService eventRegistration;
+
     private GameSession session;
     protected List<Player> speedrunnerList;
     protected int targetIndex = 0;
 
-    public HunterRole(Player owner) {
+    @Inject
+    public HunterRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
         super(owner);
+        this.server = server;
+        this.plugin = plugin;
+        this.messageService = messageService;
+        this.itemService = itemService;
+        this.eventRegistration = eventRegistration;
     }
 
     @Override
@@ -64,7 +88,7 @@ public class HunterRole extends AManhuntRole implements Listener {
     @Override
     protected void broadcastPlayerResultMessage() {
         boolean wincon = session != null && session.getRemainingSpeedrunners() == 0;
-        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (wincon ? "gagné" : "perdu") + " !"));
+        messageService.broadcastMessage("&6" + owner.getDisplayName() + ", qui était " + getName() + " a " + (wincon ? "gagné" : "perdu") + " !");
     }
 
     @Override

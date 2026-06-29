@@ -1,7 +1,5 @@
 package me.flamboyant.manhunt.domain.event;
 
-import me.flamboyant.utils.Common;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,12 +33,8 @@ public class InMemoryEventPublisher implements DomainEventPublisher {
         }
 
         if (handlers.isEmpty()) {
-            // Session already ended, handlers cleared - log warning
-            if (Common.plugin != null) {
-                Common.plugin.getLogger().warning(
-                    "Event published after session ended: " + event.getClass().getSimpleName()
-                );
-            }
+            // Session already ended, handlers cleared - silently ignore
+            // (framework-agnostic implementation - no logging dependency)
             return;
         }
 
@@ -50,13 +44,8 @@ public class InMemoryEventPublisher implements DomainEventPublisher {
                 try {
                     handler.handle(event);
                 } catch (Exception e) {
-                    // Log but continue to next handler
-                    if (Common.plugin != null) {
-                        Common.plugin.getLogger().severe(
-                            "Error handling event " + event.getClass().getSimpleName() + ": " + e.getMessage()
-                        );
-                        e.printStackTrace();
-                    }
+                    // Silently catch and continue to next handler
+                    // (framework-agnostic implementation - no logging dependency)
                 }
             }
         }

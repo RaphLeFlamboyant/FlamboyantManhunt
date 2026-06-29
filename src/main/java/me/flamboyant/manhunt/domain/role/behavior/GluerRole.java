@@ -1,11 +1,16 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
-import me.flamboyant.utils.ChatHelper;
-import me.flamboyant.utils.Common;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 public class GluerRole extends HunterRole {
@@ -13,8 +18,16 @@ public class GluerRole extends HunterRole {
     private int totalChecks = 0;
     private int validChecks = 0;
 
-    public GluerRole(Player owner) {
-        super(owner);
+    @Inject
+    public GluerRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override
@@ -25,7 +38,7 @@ public class GluerRole extends HunterRole {
 
     @Override
     protected boolean doStart() {
-        checkProximityTask = Bukkit.getScheduler().runTaskTimer(Common.plugin, () -> {
+        checkProximityTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             totalChecks++;
             for (Player p : Bukkit.getServer().getOnlinePlayers()) {
                 if (p.getWorld() == owner.getWorld() && p.getLocation().distance(owner.getLocation()) < 50) {
@@ -39,7 +52,7 @@ public class GluerRole extends HunterRole {
 
     @Override
     protected void broadcastPlayerResultMessage() {
-        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (totalChecks / validChecks < 2 ? "gagné" : "perdu") + " !"));
+        Bukkit.broadcastMessage(messageService.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (totalChecks / validChecks < 2 ? "gagné" : "perdu") + " !"));
     }
 
     @Override

@@ -64,4 +64,27 @@ public class BukkitItemService implements ItemService {
 
         return item;
     }
+
+    @Override
+    public boolean isSameItemKind(ItemStack item1, ItemStack item2) {
+        if (item1 == null || item2 == null) {
+            return item1 == item2;
+        }
+
+        if (item1.getType() != item2.getType()) {
+            return false;
+        }
+
+        ItemMeta meta1 = item1.getItemMeta();
+        ItemMeta meta2 = item2.getItemMeta();
+
+        if (meta1 == null || meta2 == null) {
+            return meta1 == meta2;
+        }
+
+        String name1 = meta1.hasDisplayName() ? meta1.getDisplayName() : null;
+        String name2 = meta2.hasDisplayName() ? meta2.getDisplayName() : null;
+
+        return (name1 == null ? name2 == null : name1.equals(name2));
+    }
 }

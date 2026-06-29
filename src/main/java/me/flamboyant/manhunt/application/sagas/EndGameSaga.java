@@ -4,10 +4,10 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import me.flamboyant.manhunt.application.commands.EndGameCommand;
 import me.flamboyant.manhunt.application.services.GameLifecycleService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.event.GameEndedEvent;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.wincondition.WinOutcome;
-import me.flamboyant.utils.ChatHelper;
 import org.bukkit.Bukkit;
 
 import java.util.logging.Logger;
@@ -28,10 +28,12 @@ public class EndGameSaga {
     private static final Logger logger = Logger.getLogger(EndGameSaga.class.getName());
 
     private final GameLifecycleService lifecycleService;
+    private final MessageService messageService;
 
     @Inject
-    public EndGameSaga(GameLifecycleService lifecycleService) {
+    public EndGameSaga(GameLifecycleService lifecycleService, MessageService messageService) {
         this.lifecycleService = lifecycleService;
+        this.messageService = messageService;
     }
 
     /**
@@ -57,7 +59,7 @@ public class EndGameSaga {
                     role.getName(),
                     playerWon ? "gagné" : "perdu"
                 );
-                Bukkit.broadcastMessage(ChatHelper.feedback(result));
+                messageService.broadcastMessage("&6" + result);
             });
         }
 

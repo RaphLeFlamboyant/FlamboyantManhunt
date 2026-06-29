@@ -11,6 +11,7 @@ import me.flamboyant.manhunt.application.exceptions.CompensationStatus;
 import me.flamboyant.manhunt.application.exceptions.GameStartException;
 import me.flamboyant.manhunt.application.services.EventHandlerRegistrationService;
 import me.flamboyant.manhunt.application.services.GameLifecycleService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.application.services.RoleAssignmentService;
 import me.flamboyant.manhunt.application.services.RoleDistributionService;
 import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
@@ -60,6 +61,7 @@ public class StartGameSaga {
     private final RoleDistributionService distributionService;
     private final RoleAssignmentService assignmentService;
     private final EventHandlerRegistrationService handlerService;
+    private final MessageService messageService;
     private final GameSessionManager sessionManager;
     private final DomainEventPublisher eventPublisher;
 
@@ -74,12 +76,14 @@ public class StartGameSaga {
                          RoleDistributionService distributionService,
                          RoleAssignmentService assignmentService,
                          EventHandlerRegistrationService handlerService,
+                         MessageService messageService,
                          GameSessionManager sessionManager,
                          DomainEventPublisher eventPublisher) {
         this.lifecycleService = lifecycleService;
         this.distributionService = distributionService;
         this.assignmentService = assignmentService;
         this.handlerService = handlerService;
+        this.messageService = messageService;
         this.sessionManager = sessionManager;
         this.eventPublisher = eventPublisher;
     }

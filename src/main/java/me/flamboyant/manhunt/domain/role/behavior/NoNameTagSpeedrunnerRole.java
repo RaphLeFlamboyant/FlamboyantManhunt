@@ -1,11 +1,17 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import me.flamboyant.manhunt.application.GameSessionManager;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
-import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.Team;
 
 import java.util.HashSet;
@@ -14,8 +20,17 @@ import java.util.stream.Collectors;
 
 public class NoNameTagSpeedrunnerRole extends SpeedrunnerRole {
     private Team team;
-    public NoNameTagSpeedrunnerRole(Player owner) {
-        super(owner);
+
+    @Inject
+    public NoNameTagSpeedrunnerRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
+        super(owner, server, plugin, messageService, itemService, eventRegistration);
     }
 
     @Override
@@ -45,7 +60,7 @@ public class NoNameTagSpeedrunnerRole extends SpeedrunnerRole {
 
         Team opponentsTeam = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam("Opponents");
 
-        for (Player p : Common.server.getOnlinePlayers()) {
+        for (Player p : server.getOnlinePlayers()) {
             opponentsTeam.addEntry(p.getName());
         }
 

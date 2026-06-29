@@ -1,13 +1,16 @@
 package me.flamboyant.manhunt.domain.role.behavior;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import me.flamboyant.manhunt.application.GameSessionManager;
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
+import me.flamboyant.manhunt.application.services.ItemService;
+import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;
 import me.flamboyant.manhunt.infrastructure.ui.PlayerSelectionView;
 import me.flamboyant.manhunt.NewManhuntManager;
-import me.flamboyant.utils.ChatHelper;
-import me.flamboyant.utils.Common;
 import org.bukkit.*;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EntityType;
@@ -21,6 +24,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.stream.Collectors;
@@ -29,12 +33,31 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
     private static BukkitTask onWinConTask;
     private static boolean winconMet;
 
-    private GameSession session;
-    private PlayerSelectionView trackView;
-    private ItemStack lastCompassUsed;
+    protected final Server server;
+    protected final Plugin plugin;
+    protected final MessageService messageService;
+    protected final ItemService itemService;
+    protected final EventRegistrationService eventRegistration;
 
-    public SpeedrunnerRole(Player owner) {
+    protected GameSession session;
+    protected PlayerSelectionView trackView;
+    protected ItemStack lastCompassUsed;
+
+    @Inject
+    public SpeedrunnerRole(
+        @Assisted Player owner,
+        Server server,
+        Plugin plugin,
+        MessageService messageService,
+        ItemService itemService,
+        EventRegistrationService eventRegistration
+    ) {
         super(owner);
+        this.server = server;
+        this.plugin = plugin;
+        this.messageService = messageService;
+        this.itemService = itemService;
+        this.eventRegistration = eventRegistration;
     }
 
     public DamageOutcome handleDamage(double damageAmount) {
@@ -72,7 +95,7 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
 
     @Override
     protected void broadcastPlayerResultMessage() {
-        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (winconMet ? "gagné" : "perdu") + " !"));
+        messageService.broadcastMessage("&6" + owner.getDisplayName() + ", qui était " + getName() + " a " + (winconMet ? "gagné" : "perdu") + " !");
     }
 
     @Override
@@ -103,7 +126,7 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
             if (dragon.getHealth() - event.getFinalDamage() <= 0) {
                 winconMet = true;
                 if (onWinConTask == null) {
-                    onWinConTask = Bukkit.getScheduler().runTaskLater(Common.plugin, () -> {
+                    onWinConTask = Bukkit.getScheduler().runTaskLater(plugin, () -> {
                         NewManhuntManager.getInstance().stopGame("Le dragon est mort !");
                     }, 1);
                 }
@@ -139,7 +162,7 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
         if (owner.hasCooldown(Material.COMPASS)) return;
 
         lastCompassUsed = event.getItem();
-        Common.server.getPluginManager().registerEvents(trackView, Common.plugin);
+        server.getPluginManager().registerEvents(trackView, plugin);
         owner.openInventory(trackView.getView());
     }
 
