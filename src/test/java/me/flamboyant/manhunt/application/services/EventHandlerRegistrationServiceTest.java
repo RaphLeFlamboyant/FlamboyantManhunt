@@ -1,6 +1,6 @@
 package me.flamboyant.manhunt.application.services;
 
-import me.flamboyant.manhunt.application.HandlerRegistration;
+import me.flamboyant.manhunt.domain.lifecycle.HandlerRegistration;
 import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
 import me.flamboyant.manhunt.domain.event.HandlersRegisteredEvent;
 import me.flamboyant.manhunt.domain.game.GameSessionId;

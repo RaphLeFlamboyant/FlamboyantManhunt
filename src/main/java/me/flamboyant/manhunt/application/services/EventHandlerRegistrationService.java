@@ -3,7 +3,7 @@ package me.flamboyant.manhunt.application.services;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import me.flamboyant.manhunt.application.HandlerRegistration;
+import me.flamboyant.manhunt.domain.lifecycle.HandlerRegistration;
 import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
 import me.flamboyant.manhunt.domain.event.HandlersRegisteredEvent;
 import me.flamboyant.manhunt.domain.game.GameSessionId;

@@ -26,12 +26,15 @@ public class BukkitEventRegistrationService implements EventRegistrationService 
     }
 
     @Override
-    public void registerListener(Listener listener) {
+    public void registerEvents(Listener listener, Plugin pluginInstance) {
         if (listener == null) {
             throw new IllegalArgumentException("Listener cannot be null");
         }
+        if (pluginInstance == null) {
+            throw new IllegalArgumentException("Plugin cannot be null");
+        }
         try {
-            server.getPluginManager().registerEvents(listener, plugin);
+            server.getPluginManager().registerEvents(listener, pluginInstance);
         } catch (Exception e) {
             throw new EventRegistrationException(
                 "Failed to register listener: " + listener.getClass().getName(), e);
@@ -39,10 +42,20 @@ public class BukkitEventRegistrationService implements EventRegistrationService 
     }
 
     @Override
-    public void unregisterListener(Listener listener) {
+    public void unregisterEvents(Listener listener) {
         if (listener == null) {
             throw new IllegalArgumentException("Listener cannot be null");
         }
         HandlerList.unregisterAll(listener);
+    }
+
+    @Override
+    public void registerListener(Listener listener) {
+        registerEvents(listener, plugin);
+    }
+
+    @Override
+    public void unregisterListener(Listener listener) {
+        unregisterEvents(listener);
     }
 }

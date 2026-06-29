@@ -101,5 +101,12 @@
             <artifactId>guice-assistedinject</artifactId>
             <version>5.1.0</version>
         </dependency>
+        <!-- FlamboyantPluginTools -->
+        <dependency>
+            <groupId>me.flamboyant</groupId>
+            <artifactId>plugintools</artifactId>
+            <version>0.1</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

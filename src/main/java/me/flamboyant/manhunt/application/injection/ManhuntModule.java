@@ -7,6 +7,8 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
+import me.flamboyant.utils.ILaunchablePlugin;
+import me.flamboyant.utils.Common;
 import me.flamboyant.manhunt.NewManhuntManager;
 import me.flamboyant.manhunt.application.GameSessionManager;
 import me.flamboyant.manhunt.infrastructure.adapters.ManhuntPluginAdapter;
@@ -21,6 +23,10 @@ import me.flamboyant.manhunt.application.services.ItemService;
 import me.flamboyant.manhunt.application.services.MessageService;
 import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
 import me.flamboyant.manhunt.domain.event.InMemoryEventPublisher;
+import me.flamboyant.manhunt.domain.services.SessionRepository;
+import me.flamboyant.manhunt.domain.services.MessagingPort;
+import me.flamboyant.manhunt.domain.services.ItemPort;
+import me.flamboyant.manhunt.domain.services.EventRegistrationPort;
 import me.flamboyant.manhunt.domain.role.ability.*;
 import me.flamboyant.manhunt.domain.role.definition.AssistedRoleFactory;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleIdentifier;
@@ -64,6 +70,12 @@ public class ManhuntModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        // Bind domain ports to application implementations
+        bind(SessionRepository.class).toProvider(GameSessionManagerProvider.class);
+        bind(MessagingPort.class).to(MessageService.class);
+        bind(ItemPort.class).to(ItemService.class);
+        bind(EventRegistrationPort.class).to(EventRegistrationService.class);
+
         // Bind plugin instance
         bind(Plugin.class).annotatedWith(Names.named("plugin")).toInstance(plugin);
 
@@ -118,8 +130,9 @@ public class ManhuntModule extends AbstractModule {
     @Singleton
     public NewManhuntManager provideNewManhuntManager(
             WinConditionEvaluator evaluator,
-            DragonKilledCondition dragonCondition) {
-        return new NewManhuntManager(evaluator, dragonCondition);
+            DragonKilledCondition dragonCondition,
+            EventRegistrationService eventRegistrationService) {
+        return new NewManhuntManager(evaluator, dragonCondition, eventRegistrationService);
     }
 
     @Provides

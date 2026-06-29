@@ -1,5 +1,6 @@
 package me.flamboyant.manhunt;
 
+import me.flamboyant.manhunt.application.services.EventRegistrationService;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.game.GamePhase;
 import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
@@ -25,12 +26,15 @@ public class NewManhuntManager implements Listener {
     private GameSession session;
     private final WinConditionEvaluator winConditionEvaluator;
     private final DragonKilledCondition dragonKilledCondition;
+    private final EventRegistrationService eventRegistrationService;
 
     public NewManhuntManager(
             WinConditionEvaluator winConditionEvaluator,
-            DragonKilledCondition dragonKilledCondition) {
+            DragonKilledCondition dragonKilledCondition,
+            EventRegistrationService eventRegistrationService) {
         this.winConditionEvaluator = winConditionEvaluator;
         this.dragonKilledCondition = dragonKilledCondition;
+        this.eventRegistrationService = eventRegistrationService;
     }
 
     /**
@@ -122,7 +126,7 @@ public class NewManhuntManager implements Listener {
             }
 
             // Register Bukkit event listeners for manhunt mechanics
-            Common.server.getPluginManager().registerEvents(this, Common.plugin);
+            eventRegistrationService.registerEvents(this, Common.plugin);
 
             // Publish roles revealed event
             session.notifyRolesRevealed();
@@ -170,7 +174,6 @@ public class NewManhuntManager implements Listener {
 
         session.clear();
         this.session = null;
-        NewManhuntLauncher.getInstance().stop();
     }
 
     // Note: Damage handling now delegated to SpeedrunnerDeathAbility

@@ -2,12 +2,13 @@ package me.flamboyant.manhunt.application;
 
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.game.GameSessionId;
+import me.flamboyant.manhunt.domain.services.SessionRepository;
 import me.flamboyant.manhunt.domain.tracking.InMemoryPortalTracker;
 import org.bukkit.entity.Player;
 
 import java.util.*;
 
-public class GameSessionManager {
+public class GameSessionManager implements SessionRepository {
     private static GameSessionManager instance;
 
     private final Map<GameSessionId, GameSession> sessions;

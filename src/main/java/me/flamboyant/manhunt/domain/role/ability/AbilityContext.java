@@ -1,9 +1,9 @@
 package me.flamboyant.manhunt.domain.role.ability;
 
-import me.flamboyant.manhunt.application.GameSessionManager;
-import me.flamboyant.manhunt.application.services.EventRegistrationService;
-import me.flamboyant.manhunt.application.services.ItemService;
-import me.flamboyant.manhunt.application.services.MessageService;
+import me.flamboyant.manhunt.domain.services.SessionRepository;
+import me.flamboyant.manhunt.domain.services.MessagingPort;
+import me.flamboyant.manhunt.domain.services.ItemPort;
+import me.flamboyant.manhunt.domain.services.EventRegistrationPort;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
@@ -14,10 +14,10 @@ import java.util.function.Consumer;
 
 public class AbilityContext {
     private final Player owner;
-    private final GameSessionManager sessionManager;
-    private final MessageService messageService;
-    private final ItemService itemService;
-    private final EventRegistrationService eventRegistration;
+    private final SessionRepository sessionRepository;
+    private final MessagingPort messagingPort;
+    private final ItemPort itemPort;
+    private final EventRegistrationPort eventRegistrationPort;
     private final Server server;
     private final Plugin plugin;
     private final AbilityManager abilityManager;
@@ -25,19 +25,19 @@ public class AbilityContext {
 
     public AbilityContext(
         Player owner,
-        GameSessionManager sessionManager,
-        MessageService messageService,
-        ItemService itemService,
-        EventRegistrationService eventRegistration,
+        SessionRepository sessionRepository,
+        MessagingPort messagingPort,
+        ItemPort itemPort,
+        EventRegistrationPort eventRegistrationPort,
         Server server,
         Plugin plugin,
         AbilityManager abilityManager
     ) {
         this.owner = owner;
-        this.sessionManager = sessionManager;
-        this.messageService = messageService;
-        this.itemService = itemService;
-        this.eventRegistration = eventRegistration;
+        this.sessionRepository = sessionRepository;
+        this.messagingPort = messagingPort;
+        this.itemPort = itemPort;
+        this.eventRegistrationPort = eventRegistrationPort;
         this.server = server;
         this.plugin = plugin;
         this.abilityManager = abilityManager;
@@ -48,6 +48,9 @@ public class AbilityContext {
     }
 
     public GameSession getSession() {
+        if (session == null) {
+            session = sessionRepository.getActiveSessionForPlayer(owner);
+        }
         return session;
     }
 
@@ -55,20 +58,40 @@ public class AbilityContext {
         this.session = session;
     }
 
-    public GameSessionManager getSessionManager() {
-        return sessionManager;
+    public SessionRepository getSessionRepository() {
+        return sessionRepository;
     }
 
-    public MessageService getMessageService() {
-        return messageService;
+    public MessagingPort getMessagingPort() {
+        return messagingPort;
     }
 
-    public ItemService getItemService() {
-        return itemService;
+    public ItemPort getItemPort() {
+        return itemPort;
     }
 
-    public EventRegistrationService getEventRegistration() {
-        return eventRegistration;
+    /**
+     * Temporary backward compatibility - abilities still use full ItemService interface.
+     * TODO: Refactor abilities to use only ItemPort methods.
+     */
+    @Deprecated
+    public me.flamboyant.manhunt.application.services.ItemService getItemService() {
+        // ItemPort is bound to ItemService implementation, so this cast is safe
+        return (me.flamboyant.manhunt.application.services.ItemService) itemPort;
+    }
+
+    /**
+     * Temporary backward compatibility - abilities still use full MessageService interface.
+     * TODO: Refactor abilities to use only MessagingPort methods.
+     */
+    @Deprecated
+    public me.flamboyant.manhunt.application.services.MessageService getMessageService() {
+        // MessagingPort is bound to MessageService implementation, so this cast is safe
+        return (me.flamboyant.manhunt.application.services.MessageService) messagingPort;
+    }
+
+    public EventRegistrationPort getEventRegistrationPort() {
+        return eventRegistrationPort;
     }
 
     public Server getServer() {
@@ -84,10 +107,18 @@ public class AbilityContext {
     }
 
     public void sendMessage(String message) {
-        messageService.sendMessage(owner, message);
+        messagingPort.sendMessage(owner, message);
     }
 
     public <T extends Event> void registerEventHandler(Class<T> eventType, Consumer<T> handler) {
         abilityManager.registerEventHandler(owner, eventType, event -> handler.accept((T) event));
+    }
+
+    /**
+     * Register a Bukkit Listener for this ability context.
+     * Delegates to EventRegistrationPort (application layer).
+     */
+    public void registerListener(org.bukkit.event.Listener listener) {
+        eventRegistrationPort.registerEvents(listener, plugin);
     }
 }

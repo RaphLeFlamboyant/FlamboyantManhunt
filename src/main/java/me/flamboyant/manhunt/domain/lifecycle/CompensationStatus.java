@@ -1,5 +1,11 @@
-package me.flamboyant.manhunt.application.exceptions;
+package me.flamboyant.manhunt.domain.lifecycle;
 
+/**
+ * Tracks the completion status of compensation steps during game start failure.
+ *
+ * Used by GameStartFailedEvent to communicate which cleanup steps were successfully
+ * performed during rollback. This allows handlers to know what state was reverted.
+ */
 public class CompensationStatus {
     private boolean handlersUnregistered;
     private boolean rolesCleared;

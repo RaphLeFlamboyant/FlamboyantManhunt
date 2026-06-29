@@ -61,6 +61,13 @@ public class ManhuntPluginAdapter implements ILaunchablePlugin {
     }
 
     @Override
+    public boolean canModifyParametersOnTheFly() {
+        // Game parameters cannot be changed while game is running
+        // Player role selections are locked once game starts
+        return false;
+    }
+
+    @Override
     public boolean stop() {
         gameLaunchService.stopGame("Game stopped by player");
         return true;
@@ -140,8 +147,8 @@ public class ManhuntPluginAdapter implements ILaunchablePlugin {
 
         Map<Player, ManhuntRoleIdentifier> roleAssignments = new HashMap<>();
         for (Map.Entry<Player, EnumParameter<ManhuntRoleIdentifier>> entry : playerRoles.entrySet()) {
-            if (entry.getValue().getValue() != null) {
-                roleAssignments.put(entry.getKey(), entry.getValue().getValue());
+            if (entry.getValue().getSelectedValue() != null) {
+                roleAssignments.put(entry.getKey(), entry.getValue().getSelectedValue());
             }
         }
 
@@ -150,9 +157,9 @@ public class ManhuntPluginAdapter implements ILaunchablePlugin {
             .playerRoleAssignments(roleAssignments)
             .speedrunnerCount(speedrunnerCountParameter.getValue())
             .allyCount(allyCountParameter.getValue())
-            .specialRolesOnly(specialRolesOnlyParameter.getValue())
-            .hiddenSpeedrunner(surpriseSpeedrunnerParameter.getValue())
-            .resetPlayerStuff(resetPlayersStuffParameter.getValue())
+            .specialRolesOnly(specialRolesOnlyParameter.getValue() == 1)
+            .hiddenSpeedrunner(surpriseSpeedrunnerParameter.getValue() == 1)
+            .resetPlayerStuff(resetPlayersStuffParameter.getValue() == 1)
             .roleRevealDelayMinutes(minutesBeforeRolesParameter.getValue())
             .build();
     }

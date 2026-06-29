@@ -1,6 +1,6 @@
 package me.flamboyant.manhunt.domain.event;
 
-import me.flamboyant.manhunt.application.exceptions.CompensationStatus;
+import me.flamboyant.manhunt.domain.lifecycle.CompensationStatus;
 import me.flamboyant.manhunt.domain.game.GameSessionId;
 
 public class GameStartFailedEvent extends DomainEvent {

@@ -1,7 +1,7 @@
 package me.flamboyant.manhunt.application.services;
 
 import me.flamboyant.manhunt.application.GameSessionManager;
-import me.flamboyant.manhunt.application.HandlerRegistration;
+import me.flamboyant.manhunt.domain.lifecycle.HandlerRegistration;
 import me.flamboyant.manhunt.application.commands.EndGameCommand;
 import me.flamboyant.manhunt.domain.event.DomainEventPublisher;
 import me.flamboyant.manhunt.domain.event.GameSessionCreatedEvent;

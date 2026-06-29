@@ -1,6 +1,6 @@
 package me.flamboyant.manhunt.domain.game;
 
-import me.flamboyant.manhunt.application.HandlerRegistration;
+import me.flamboyant.manhunt.domain.lifecycle.HandlerRegistration;
 import me.flamboyant.manhunt.domain.event.MockEventPublisher;
 import me.flamboyant.manhunt.domain.role.behavior.AManhuntRole;
 import me.flamboyant.manhunt.domain.role.definition.ManhuntRoleType;

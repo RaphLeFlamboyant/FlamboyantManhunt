@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
  * Service for sending formatted messages to players and server.
  * Replaces ChatHelper with framework-independent abstraction.
  */
-public interface MessageService {
+public interface MessageService extends me.flamboyant.manhunt.domain.services.MessagingPort {
     /**
      * Send a message to a player with color code translation.
      * @param player target player (must not be null)

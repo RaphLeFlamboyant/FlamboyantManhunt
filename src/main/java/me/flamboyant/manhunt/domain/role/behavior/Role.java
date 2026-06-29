@@ -2,10 +2,10 @@ package me.flamboyant.manhunt.domain.role.behavior;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import me.flamboyant.manhunt.application.GameSessionManager;
-import me.flamboyant.manhunt.application.services.EventRegistrationService;
-import me.flamboyant.manhunt.application.services.ItemService;
-import me.flamboyant.manhunt.application.services.MessageService;
+import me.flamboyant.manhunt.domain.services.SessionRepository;
+import me.flamboyant.manhunt.domain.services.MessagingPort;
+import me.flamboyant.manhunt.domain.services.ItemPort;
+import me.flamboyant.manhunt.domain.services.EventRegistrationPort;
 import me.flamboyant.manhunt.domain.game.GameSession;
 import me.flamboyant.manhunt.domain.role.ability.Ability;
 import me.flamboyant.manhunt.domain.role.ability.AbilityContext;
@@ -42,10 +42,10 @@ public class Role extends AManhuntRole implements Listener {
         @Assisted Player owner,
         @Assisted RoleDefinition definition,
         AbilityManager abilityManager,
-        GameSessionManager sessionManager,
-        MessageService messageService,
-        ItemService itemService,
-        EventRegistrationService eventRegistration,
+        SessionRepository sessionRepository,
+        MessagingPort messagingPort,
+        ItemPort itemPort,
+        EventRegistrationPort eventRegistrationPort,
         Server server,
         Plugin plugin
     ) {
@@ -56,13 +56,13 @@ public class Role extends AManhuntRole implements Listener {
         this.description = definition.getDescription();
         this.abilityManager = abilityManager;
 
-        // Build context
+        // Build context with domain ports
         this.context = new AbilityContext(
             owner,
-            sessionManager,
-            messageService,
-            itemService,
-            eventRegistration,
+            sessionRepository,
+            messagingPort,
+            itemPort,
+            eventRegistrationPort,
             server,
             plugin,
             abilityManager
@@ -74,7 +74,7 @@ public class Role extends AManhuntRole implements Listener {
 
     @Override
     protected boolean doStart() {
-        GameSession session = context.getSessionManager().getActiveSessionForPlayer(owner);
+        GameSession session = context.getSessionRepository().getActiveSessionForPlayer(owner);
         if (session == null) {
             return false;
         }
@@ -109,6 +109,10 @@ public class Role extends AManhuntRole implements Listener {
             }
         });
 
+        // FIX MEMORY LEAK: Clear all event handlers for this role's owner
+        // Without this, handlers accumulate across game sessions
+        abilityManager.clearEventHandlers(owner);
+
         return true;
     }
 
@@ -116,7 +120,7 @@ public class Role extends AManhuntRole implements Listener {
     protected void broadcastPlayerResultMessage() {
         // Default message
         boolean won = determineWinStatus();
-        context.getMessageService().broadcastMessage(
+        context.getMessagingPort().broadcastMessage(
             "&6" + owner.getDisplayName() + ", qui était " + name + " a " +
             (won ? "gagné" : "perdu") + " !"
         );

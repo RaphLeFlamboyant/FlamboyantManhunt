@@ -87,4 +87,12 @@ public class BukkitItemService implements ItemService {
 
         return (name1 == null ? name2 == null : name1.equals(name2));
     }
+
+    @Override
+    public boolean hasItem(Player player, Material material) {
+        if (player == null || material == null) {
+            throw new IllegalArgumentException("Player and material cannot be null");
+        }
+        return player.getInventory().contains(material);
+    }
 }

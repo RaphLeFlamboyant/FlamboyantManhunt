@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
  * Service for item creation and manipulation.
  * Replaces ItemHelper with framework-independent abstraction.
  */
-public interface ItemService {
+public interface ItemService extends me.flamboyant.manhunt.domain.services.ItemPort {
     /**
      * Give an item to a player. If inventory is full, drops at player location.
      * @param player target player (must not be null)
