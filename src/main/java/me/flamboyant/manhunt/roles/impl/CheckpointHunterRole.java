@@ -131,6 +131,6 @@ public class CheckpointHunterRole extends AManhuntRole implements Listener {
     }
 
     private ItemStack getRollbackItem() {
-        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Rollback", Arrays.asList("Te fait revenir au checkpoint"), true, Enchantment.ARROW_FIRE, true, true);
+        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Rollback", Arrays.asList("Te fait revenir au checkpoint"), true, Enchantment.FLAME, true, true);
     }
 }

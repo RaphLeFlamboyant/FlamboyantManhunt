@@ -53,7 +53,7 @@ public class PlayerSelectionView implements Listener {
         if (playerParameters.isAllPlayers()) onAllPlayersSelected(allPlayersItem);
 
         ItemStack previous = new ItemStack(Material.REDSTONE);
-        previous.addUnsafeEnchantment(Enchantment.ARROW_FIRE, 1);
+        previous.addUnsafeEnchantment(Enchantment.FLAME, 1);
         meta = previous.getItemMeta();
         meta.setDisplayName("Revenir au menu");
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -122,7 +122,7 @@ public class PlayerSelectionView implements Listener {
     }
 
     private void addItemSelectionVisual(ItemStack item) {
-        item.addUnsafeEnchantment(Enchantment.ARROW_FIRE, 1);
+        item.addUnsafeEnchantment(Enchantment.FLAME, 1);
         ItemMeta meta = item.getItemMeta();
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         meta.setLore(Arrays.asList("YES"));
@@ -130,7 +130,7 @@ public class PlayerSelectionView implements Listener {
     }
 
     private void removeItemSelectionVisual(ItemStack item) {
-        item.removeEnchantment(Enchantment.ARROW_FIRE);
+        item.removeEnchantment(Enchantment.FLAME);
     }
 
     public void close() {

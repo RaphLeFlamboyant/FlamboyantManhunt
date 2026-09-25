@@ -53,7 +53,7 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
             if (world.getName().toLowerCase().contains("end")
                     || !world.getName().toLowerCase().contains("nether") && (time < 1000 || time > 13000)) {
                 setActivationState(true);
-                PotionEffect effect = new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 7 * 20, 1, false, false);
+                PotionEffect effect = new PotionEffect(PotionEffectType.STRENGTH, 7 * 20, 1, false, false);
                 owner.addPotionEffect(effect);
                 effect = new PotionEffect(PotionEffectType.NIGHT_VISION, 25 * 20, 1, false, false);
                 owner.addPotionEffect(effect);
@@ -78,7 +78,7 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
         powerActivated = isActive;
         if (!isActive) {
             owner.sendMessage(ChatHelper.feedback("Vous n'avez plus vos pouvoirs pour le moment. Votre boussole redevient normale."));
-            owner.setCompassTarget(owner.getBedSpawnLocation());
+            owner.setCompassTarget(owner.getRespawnLocation());
         }
         else {
             owner.setCooldown(Material.COMPASS, 0);

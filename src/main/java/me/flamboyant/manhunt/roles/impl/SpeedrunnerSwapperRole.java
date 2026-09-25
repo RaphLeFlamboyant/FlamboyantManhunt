@@ -91,6 +91,6 @@ public class SpeedrunnerSwapperRole extends SpeedrunnerRole {
     }
 
     private ItemStack getTargetSelectionItem() {
-        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Choisir le joueur", Arrays.asList("Change ta place avec un joueur"), true, Enchantment.ARROW_FIRE, true, true);
+        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Choisir le joueur", Arrays.asList("Change ta place avec un joueur"), true, Enchantment.FLAME, true, true);
     }
 }

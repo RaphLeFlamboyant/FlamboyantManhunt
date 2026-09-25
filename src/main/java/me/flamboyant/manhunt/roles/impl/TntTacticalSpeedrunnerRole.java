@@ -82,6 +82,6 @@ public class TntTacticalSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     private ItemStack getTntActivationItem() {
-        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Activation TNT", Arrays.asList("Fait exploser le dernier bloc placé"), true, Enchantment.ARROW_FIRE, true, true);
+        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Activation TNT", Arrays.asList("Fait exploser le dernier bloc placé"), true, Enchantment.FLAME, true, true);
     }
 }
