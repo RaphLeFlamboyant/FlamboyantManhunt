@@ -41,7 +41,8 @@ public class ItemHelper {
                                          Enchantment enchant,
                                          Boolean hideEnchant,
                                          Boolean hideAttributes) {
-        return generateItem(material, quantity, displayName, lore, addEnchant, enchant, 0, hideEnchant, hideAttributes);
+        // Level 1, not 0: since 1.20.5 an enchantment with level 0 is dropped when the item is sent to the server
+        return generateItem(material, quantity, displayName, lore, addEnchant, enchant, 1, hideEnchant, hideAttributes);
     }
 
     public static ItemStack generatePotion(PotionType potionType,

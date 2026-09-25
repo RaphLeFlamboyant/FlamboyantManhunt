@@ -3,6 +3,7 @@ package me.flamboyant.manhunt.roles.impl;
 import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -78,7 +79,8 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
         powerActivated = isActive;
         if (!isActive) {
             owner.sendMessage(ChatHelper.feedback("Vous n'avez plus vos pouvoirs pour le moment. Votre boussole redevient normale."));
-            owner.setCompassTarget(owner.getRespawnLocation());
+            Location respawnLocation = owner.getRespawnLocation();
+            owner.setCompassTarget(respawnLocation != null ? respawnLocation : owner.getWorld().getSpawnLocation());
         }
         else {
             owner.setCooldown(Material.COMPASS, 0);
