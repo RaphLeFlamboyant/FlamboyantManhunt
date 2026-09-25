@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class LinkSpeedrunnerRole extends SpeedrunnerRole {
-    private static final List<Material> grasses = Arrays.asList(Material.GRASS, Material.TALL_GRASS, Material.SEAGRASS, Material.TALL_SEAGRASS, Material.WARPED_ROOTS, Material.NETHER_SPROUTS, Material.CRIMSON_ROOTS);
+    private static final List<Material> grasses = Arrays.asList(Material.SHORT_GRASS, Material.TALL_GRASS, Material.SEAGRASS, Material.TALL_SEAGRASS, Material.WARPED_ROOTS, Material.NETHER_SPROUTS, Material.CRIMSON_ROOTS);
 
     public LinkSpeedrunnerRole(Player owner) {
         super(owner);

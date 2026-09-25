@@ -155,10 +155,10 @@ public class SpeedrunnerRole extends AManhuntRole implements Listener {
             lastCompassUsed.setItemMeta(compassMeta);
         }
         else {
+            // Since 1.20.5 clearing the lodestone keeps a lodestone compass (it spins), reset it to a normal compass
             CompassMeta compassMeta = (CompassMeta) lastCompassUsed.getItemMeta();
-            compassMeta.setLodestone(null);
-            compassMeta.setLodestoneTracked(false);
-            lastCompassUsed.setItemMeta(compassMeta);
+            if (compassMeta.hasLodestone())
+                lastCompassUsed.setItemMeta(null);
             owner.setCompassTarget(huntedLocation);
         }
     }

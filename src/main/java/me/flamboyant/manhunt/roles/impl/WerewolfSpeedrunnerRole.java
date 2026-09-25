@@ -3,6 +3,7 @@ package me.flamboyant.manhunt.roles.impl;
 import me.flamboyant.utils.ChatHelper;
 import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -53,7 +54,7 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
             if (world.getName().toLowerCase().contains("end")
                     || !world.getName().toLowerCase().contains("nether") && (time < 1000 || time > 13000)) {
                 setActivationState(true);
-                PotionEffect effect = new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 7 * 20, 1, false, false);
+                PotionEffect effect = new PotionEffect(PotionEffectType.STRENGTH, 7 * 20, 1, false, false);
                 owner.addPotionEffect(effect);
                 effect = new PotionEffect(PotionEffectType.NIGHT_VISION, 25 * 20, 1, false, false);
                 owner.addPotionEffect(effect);
@@ -78,7 +79,8 @@ public class WerewolfSpeedrunnerRole extends SpeedrunnerRole {
         powerActivated = isActive;
         if (!isActive) {
             owner.sendMessage(ChatHelper.feedback("Vous n'avez plus vos pouvoirs pour le moment. Votre boussole redevient normale."));
-            owner.setCompassTarget(owner.getBedSpawnLocation());
+            Location respawnLocation = owner.getRespawnLocation();
+            owner.setCompassTarget(respawnLocation != null ? respawnLocation : owner.getWorld().getSpawnLocation());
         }
         else {
             owner.setCooldown(Material.COMPASS, 0);

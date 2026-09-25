@@ -121,10 +121,10 @@ public class CheckpointSpeedrunnerRole extends SpeedrunnerRole {
     }
 
     private ItemStack getRollbackItem() {
-        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Rollback", Arrays.asList("Te fait revenir au checkpoint"), true, Enchantment.ARROW_FIRE, true, true);
+        return ItemHelper.generateItem(Material.RECOVERY_COMPASS, 1, "Rollback", Arrays.asList("Te fait revenir au checkpoint"), true, Enchantment.FLAME, true, true);
     }
 
     private ItemStack getCheckpointItem() {
-        return ItemHelper.generateItem(Material.TARGET, 1, "Save State", Arrays.asList("Créer un checkpoint"), true, Enchantment.ARROW_FIRE, true, true);
+        return ItemHelper.generateItem(Material.TARGET, 1, "Save State", Arrays.asList("Créer un checkpoint"), true, Enchantment.FLAME, true, true);
     }
 }

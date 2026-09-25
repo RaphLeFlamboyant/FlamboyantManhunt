@@ -117,10 +117,10 @@ public class HunterRole extends AManhuntRole implements Listener {
             event.getItem().setItemMeta(compassMeta);
         }
         else {
+            // Since 1.20.5 clearing the lodestone keeps a lodestone compass (it spins), reset it to a normal compass
             CompassMeta compassMeta = (CompassMeta) event.getItem().getItemMeta();
-            compassMeta.setLodestone(null);
-            compassMeta.setLodestoneTracked(false);
-            event.getItem().setItemMeta(compassMeta);
+            if (compassMeta.hasLodestone())
+                event.getItem().setItemMeta(null);
             owner.setCompassTarget(huntedLocation);
         }
     }

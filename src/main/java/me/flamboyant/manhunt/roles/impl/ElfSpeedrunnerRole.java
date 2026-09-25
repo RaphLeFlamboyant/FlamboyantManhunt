@@ -3,6 +3,7 @@ package me.flamboyant.manhunt.roles.impl;
 import me.flamboyant.utils.Common;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Arrow;
@@ -28,8 +29,8 @@ public class ElfSpeedrunnerRole extends SpeedrunnerRole {
     @Override
     protected boolean doStart() {
         regenTask = Bukkit.getScheduler().runTaskTimer(Common.plugin, () -> {
-            if (regenBiomes.contains(owner.getLocation().getWorld().getBiome(owner.getLocation())))
-                owner.setHealth(owner.getHealth() + 1);
+            if (!owner.isDead() && regenBiomes.contains(owner.getLocation().getWorld().getBiome(owner.getLocation())))
+                owner.setHealth(Math.min(owner.getHealth() + 1, owner.getAttribute(Attribute.MAX_HEALTH).getValue()));
         }, 5 * 20, 5 * 20);
 
         return super.doStart();

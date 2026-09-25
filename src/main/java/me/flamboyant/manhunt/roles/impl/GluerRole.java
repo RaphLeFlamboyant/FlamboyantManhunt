@@ -27,7 +27,7 @@ public class GluerRole extends HunterRole {
         checkProximityTask = Bukkit.getScheduler().runTaskTimer(Common.plugin, () -> {
             totalChecks++;
             for (Player p : Bukkit.getServer().getOnlinePlayers()) {
-                if (p.getWorld() == owner.getWorld() && p.getLocation().distance(owner.getLocation()) < 50) {
+                if (p != owner && p.getWorld() == owner.getWorld() && p.getLocation().distance(owner.getLocation()) < 50) {
                     validChecks++;
                     break;
                 }
@@ -38,7 +38,7 @@ public class GluerRole extends HunterRole {
 
     @Override
     protected void broadcastPlayerResultMessage() {
-        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (totalChecks / validChecks < 2 ? "gagné" : "perdu") + " !"));
+        Bukkit.broadcastMessage(ChatHelper.feedback(owner.getDisplayName() + ", qui était " + getName() + " a " + (validChecks * 2 > totalChecks ? "gagné" : "perdu") + " !"));
     }
 
     @Override
