@@ -4,6 +4,7 @@ import me.flamboyant.utils.Common;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class PlayerSelectionParameter extends AParameter {
         super(representation, parameterName, description);
 
         possibleValues = Arrays.stream(Common.server.getOfflinePlayers()).filter(op -> op.getPlayer() != null).map(op -> op.getPlayer()).toArray(Player[]::new);
-        selectedValues = Arrays.asList(possibleValues);
+        selectedValues = new ArrayList<>(Arrays.asList(possibleValues));
     }
 
     public Player[] getPossibleValues() { return possibleValues; }

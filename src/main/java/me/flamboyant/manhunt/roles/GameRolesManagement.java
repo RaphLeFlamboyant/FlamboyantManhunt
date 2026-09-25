@@ -70,7 +70,7 @@ public class GameRolesManagement {
         distributeRoles(playersToUpdate, playersParameter, wantedSpeedrunnerCount, wantedAllyCount, specialOnly);
 
         for (Player p : playersParameter.keySet()) {
-            Bukkit.getLogger().info(p.getDisplayName() + " - " + playersParameter.get(p).getSelectedValue().toString());
+            Bukkit.getLogger().info(p.getDisplayName() + " - " + playersParameter.get(p).getSelectedValue());
         }
 
         return true;
@@ -135,8 +135,8 @@ public class GameRolesManagement {
         if (roll < 90) return 0;
 
         int effectiveAllies = 1;
-        while (possibleAllies > 0) {
-            if (roll < 20)
+        for (int i = 1; i < possibleAllies; i++) {
+            if (Common.rng.nextInt(100) < 20)
                 effectiveAllies++;
         }
 
@@ -147,8 +147,8 @@ public class GameRolesManagement {
         int possibleBonus = playerCount / 6;
 
         int roll = Common.rng.nextInt(100);
-        Bukkit.broadcastMessage("Roll : " + roll);
-        if (roll < 95) return 1;
+        Bukkit.getLogger().info("Speedrunner count roll : " + roll);
+        if (roll < 95 || possibleBonus == 0) return 1;
         return Common.rng.nextInt(possibleBonus) + 2;
     }
 

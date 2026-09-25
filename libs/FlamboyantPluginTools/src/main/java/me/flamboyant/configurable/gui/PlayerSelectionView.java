@@ -58,7 +58,7 @@ public class PlayerSelectionView implements Listener {
         meta.setDisplayName("Revenir au menu");
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         previous.setItemMeta(meta);
-        view.setItem(0, allPlayersItem);
+        view.setItem(0, previous);
     }
 
     public String getViewId() {
