@@ -6,40 +6,42 @@
 
     <groupId>me.flamboyant</groupId>
     <artifactId>manhunt</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
     <packaging>jar</packaging>
 
     <name>Imposters Manhunt</name>
 
     <properties>
-        <java.version>1.8</java.version>
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <build>
+        <finalName>ImpostersManhunt-${project.version}-mc26.2</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.16.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <release>${maven.compiler.release}</release>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.2</version>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <id>add-vendored-sources</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>shade</goal>
+                            <goal>add-source</goal>
                         </goals>
                         <configuration>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <outputFile>.\out\ImpostersManhunt_1.20.1.jar</outputFile>
+                            <sources>
+                                <source>libs/FlamboyantPluginTools/src/main/java</source>
+                            </sources>
                         </configuration>
                     </execution>
                 </executions>
@@ -51,7 +53,6 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        <sourceDirectory>./</sourceDirectory>
     </build>
 
     <repositories>
@@ -59,17 +60,13 @@
             <id>spigotmc-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
-        <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
-        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.20.1-R0.1-SNAPSHOT</version>
+            <version>26.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
